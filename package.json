@@ -64,8 +64,8 @@
     "vuex-electron": "^1.0.0"
   },
   "devDependencies": {
+    "@babel/core": "^7.7.2",
     "ajv": "^6.5.0",
-    "babel-core": "^6.26.3",
     "babel-eslint": "^8.2.3",
     "babel-loader": "^7.1.4",
     "babel-plugin-istanbul": "^4.1.6",
@@ -109,6 +109,7 @@
     "multispinner": "^0.2.1",
     "node-loader": "^0.6.0",
     "node-sass": "^4.9.2",
+    "ora": "^4.0.3",
     "require-dir": "^1.0.0",
     "sass-loader": "^7.0.3",
     "spectron": "^3.8.0",

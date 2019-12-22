@@ -36,33 +36,27 @@ function build () {
   del.sync(['dist/electron/*', '!.gitkeep'])
 
   let results = ''
-
-  const mainPromise = pack(mainConfig).then(result => {
-    results += result + '\n\n'
-    return Promise.resolve('main')
-  }).catch(err => {
-    console.log(`\n  ${errorLog}failed to build main process`)
-    console.error(`\n${err}\n`)
-    process.exit(1)
-    return Promise.reject()
+  let promisesArray = []
+  let spinnersArray = []
+  const configs = {'main': mainConfig, 'renderer': rendererConfig}
+  Object.keys(configs).forEach(key => {
+    const p = pack(configs[key]).then(result => {
+      results += result + '\n\n'
+      return Promise.resolve(key)
+    }).catch(err => {
+      console.log(`\n  ${errorLog}failed to build ${key} process`)
+      console.error(`\n${err}\n`)
+      process.exit(1)
+      return Promise.reject(key)
+    })
+    promisesArray.push(p)
+    spinnersArray.push(ora.promise(p, `building ${key} process\n`).start())
   })
 
-  const mainSpinner = ora.promise(mainPromise, 'building main process\n').start()
-
-  const rendererPromise = pack(rendererConfig).then(result => {
-    results += result + '\n\n'
-    return Promise.resolve('renderer')
-  }).catch(err => {
-    console.log(`\n  ${errorLog}failed to build renderer process`)
-    console.error(`\n${err}\n`)
-    process.exit(1)
-    return Promise.reject()
-  })
-
-  const rendererSpinner = ora.promise(mainPromise, 'building renderer process\n').start()
-
-
-  Promise.all([mainPromise, rendererPromise])
+  Promise.all(promisesArray)
+    .then(() => {
+      setTimeout(() => { return Promise.resolve()}, 3000)
+    })
     .then(() => {
       process.stdout.write('\x1B[2J\x1B[0f')
       console.log(`\n\n${results}`)

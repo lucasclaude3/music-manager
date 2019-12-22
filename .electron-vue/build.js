@@ -5,10 +5,8 @@ process.env.NODE_ENV = 'production'
 const { say } = require('cfonts')
 const chalk = require('chalk')
 const del = require('del')
-const { spawn } = require('child_process')
 const webpack = require('webpack')
-const Multispinner = require('multispinner')
-
+const ora = require('ora')
 
 const mainConfig = require('./webpack.main.config')
 const rendererConfig = require('./webpack.renderer.config')
@@ -34,40 +32,34 @@ function build () {
 
   del.sync(['dist/electron/*', '!.gitkeep'])
 
-  const tasks = ['main', 'renderer']
-  const m = new Multispinner(tasks, {
-    preText: 'building',
-    postText: 'process'
-  })
-
   let results = ''
-
-  m.on('success', () => {
-    process.stdout.write('\x1B[2J\x1B[0f')
-    console.log(`\n\n${results}`)
-    console.log(`${okayLog}take it away ${chalk.yellow('`electron-builder`')}\n`)
-    process.exit()
+  let promisesArray = []
+  let spinnersArray = []
+  const configs = {'main': mainConfig, 'renderer': rendererConfig}
+  Object.keys(configs).forEach(key => {
+    const p = pack(configs[key]).then(result => {
+      results += result + '\n\n'
+      return Promise.resolve(key)
+    }).catch(err => {
+      console.log(`\n  ${errorLog}failed to build ${key} process`)
+      console.error(`\n${err}\n`)
+      process.exit(1)
+      return Promise.reject(key)
+    })
+    promisesArray.push(p)
+    spinnersArray.push(ora.promise(p, `building ${key} process\n`).start())
   })
 
-  pack(mainConfig).then(result => {
-    results += result + '\n\n'
-    m.success('main')
-  }).catch(err => {
-    m.error('main')
-    console.log(`\n  ${errorLog}failed to build main process`)
-    console.error(`\n${err}\n`)
-    process.exit(1)
-  })
-
-  pack(rendererConfig).then(result => {
-    results += result + '\n\n'
-    m.success('renderer')
-  }).catch(err => {
-    m.error('renderer')
-    console.log(`\n  ${errorLog}failed to build renderer process`)
-    console.error(`\n${err}\n`)
-    process.exit(1)
-  })
+  Promise.all(promisesArray)
+    .then(() => {
+      setTimeout(() => { return Promise.resolve()}, 3000)
+    })
+    .then(() => {
+      process.stdout.write('\x1B[2J\x1B[0f')
+      console.log(`\n\n${results}`)
+      console.log(`${okayLog}take it away ${chalk.yellow('`electron-builder`')}\n`)
+      process.exit()
+    })
 }
 
 function pack (config) {

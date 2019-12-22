@@ -5,9 +5,9 @@
 </template>
 
 <script>
-  export default {
-    name: 'music-manager',
-  };
+export default {
+  name: 'music-manager',
+};
 </script>
 
 <style>

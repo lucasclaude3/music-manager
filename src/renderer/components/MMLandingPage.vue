@@ -8,17 +8,17 @@
 </template>
 
 <script>
-  import NewTag from './MMLandingPage/NewTag';
+import NewTag from './MMLandingPage/NewTag';
 
-  export default {
-    name: 'mm-landing-page',
-    components: { NewTag },
-    methods: {
-      open(link) {
-        this.$electron.shell.openExternal(link);
-      },
+export default {
+  name: 'mm-landing-page',
+  components: { NewTag },
+  methods: {
+    open(link) {
+      this.$electron.shell.openExternal(link);
     },
-  };
+  },
+};
 </script>
 
 <style>

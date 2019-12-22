@@ -8,12 +8,12 @@
 </template>
 
 <script>
-  import Autocomplete from './Autocomplete';
+import Autocomplete from './Autocomplete';
 
-  export default {
-    name: 'new-tag',
-    components: { Autocomplete },
-  };
+export default {
+  name: 'new-tag',
+  components: { Autocomplete },
+};
 </script>
 
 <style scoped>

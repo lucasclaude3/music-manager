@@ -5,11 +5,8 @@ process.env.NODE_ENV = 'production'
 const { say } = require('cfonts')
 const chalk = require('chalk')
 const del = require('del')
-const { spawn } = require('child_process')
 const webpack = require('webpack')
-const Multispinner = require('multispinner')
 const ora = require('ora')
-
 
 const mainConfig = require('./webpack.main.config')
 const rendererConfig = require('./webpack.renderer.config')
@@ -86,7 +83,7 @@ function pack (config) {
       } else {
         resolve(stats.toString({
           chunks: false,
-          colors: true,
+          colors: true
         }))
       }
     })

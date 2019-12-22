@@ -1,3 +1,5 @@
 ### Next tasks to handle
 
-- [ ] Replace Multispinner in build.js
+- [ ] Let the user store a new Tag
+- [x] Fix vulnerabilities
+- [x] Replace Multispinner in build.js

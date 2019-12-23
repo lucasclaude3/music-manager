@@ -42,31 +42,7 @@
 </template>
 
 <script>
-import { ipcRenderer } from 'electron';
-const standardItems = [
-  'input',
-  'h1',
-  'h2',
-  'h3',
-  'h4',
-  'h5',
-  'h6',
-  'span',
-  'div',
-  'textarea',
-  'margin',
-  'padding',
-  'display',
-  'background',
-  'background-color',
-  'background-size',
-  'background-repeat',
-  'position',
-  'top',
-  'left',
-  'right',
-  'bottom',
-];
+import { mapState, mapActions } from 'vuex';
 
 /* eslint-disable */
 // Thanks: https://github.com/component/textarea-caret-position
@@ -91,6 +67,7 @@ export default {
   },
   mounted() {
     const self = this;
+    this.loadTags();
     document.querySelector(`#${this.id}`)
       .addEventListener('input', () => {
         const caret = window.getCaretCoordinates(this, this.selectionEnd);
@@ -110,7 +87,7 @@ export default {
       if (typeof this.items !== 'undefined' && this.items.length > 0) {
         return this.items;
       }
-      return standardItems;
+      return this.tags;
     },
     currentWord() {
       return this.inputValue.replace(/(\r\n|\n|\r)/gm, ' ').split(' ')[this.wordIndex];
@@ -118,6 +95,7 @@ export default {
     inputSplitted() {
       return this.inputValue.replace(/(\r\n|\n|\r)/gm, ' ').split(' ');
     },
+    ...mapState('Autocomplete', ['tags']),
   },
   watch: {
     inputValue() {
@@ -184,8 +162,12 @@ export default {
       }
     },
     submit() {
-      ipcRenderer.send('tags:create', this.currentWord);
+      this.createTag(this.currentWord);
     },
+    ...mapActions({
+      createTag: 'Autocomplete/createTag',
+      loadTags: 'Autocomplete/loadTags',
+    }),
   },
 };
 </script>

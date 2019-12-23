@@ -70,9 +70,12 @@ app.on('ready', () => {
 })
  */
 
-const tags = [];
-
-ipcMain.on('tags:create', (event, tag) => {
+ipcMain.on('tag:create', (event, tag) => {
+  const tags = store.get('tags');
   tags.push(tag);
   store.set({ tags });
+});
+
+ipcMain.on('tags:load', () => {
+  mainWindow.webContents.send('tags:loaded', store.get('tags'));
 });

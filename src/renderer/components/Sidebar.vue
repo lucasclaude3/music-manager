@@ -1,13 +1,35 @@
 <template>
   <nav class="sidebar">
     sidebar
+    <ul>
+      <li
+        @click="selectItem(index), chooseItem()"
+        v-for="(tag, index) in this.tags"
+        v-html="tag"
+        v-bind:key="index"
+      ></li>
+    </ul>
   </nav>
 </template>
 
 <script>
+import { mapState, mapActions } from 'vuex';
+
 export default {
   name: 'Sidebar',
+  mounted() {
+    this.loadTags();
+  },
+  computed: {
+    ...mapState('Autocomplete', ['tags']),
+  },
+  methods: {
+    ...mapActions({
+      loadTags: 'Autocomplete/loadTags',
+    }),
+  },
 };
+
 </script>
 
 <style scoped lang="scss">

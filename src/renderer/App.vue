@@ -1,11 +1,15 @@
 <template>
   <div id="app">
-    <router-view></router-view>
+    <AppShell />
   </div>
 </template>
 
 <script>
+import AppShell from '@/components/AppShell';
 export default {
   name: 'music-manager',
+  components: {
+    AppShell,
+  },
 };
 </script>

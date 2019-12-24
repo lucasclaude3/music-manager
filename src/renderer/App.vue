@@ -9,7 +9,3 @@ export default {
   name: 'music-manager',
 };
 </script>
-
-<style>
-  /* CSS */
-</style>

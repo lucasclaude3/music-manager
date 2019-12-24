@@ -1,4 +1,7 @@
-import { app, BrowserWindow } from 'electron' // eslint-disable-line
+import { app, BrowserWindow, ipcMain } from 'electron' // eslint-disable-line
+import Store from 'electron-store';
+
+const store = new Store();
 
 /**
  * Set `__static` path to static files in production
@@ -18,6 +21,9 @@ function createWindow() {
    * Initial window options
    */
   mainWindow = new BrowserWindow({
+    webPreferences: {
+      nodeIntegration: true,
+    },
     height: 563,
     useContentSize: true,
     width: 1000,
@@ -63,3 +69,13 @@ app.on('ready', () => {
   if (process.env.NODE_ENV === 'production') autoUpdater.checkForUpdates()
 })
  */
+
+ipcMain.on('tag:create', (event, tag) => {
+  const tags = store.get('tags');
+  tags.push(tag);
+  store.set({ tags });
+});
+
+ipcMain.on('tags:load', () => {
+  mainWindow.webContents.send('tags:loaded', store.get('tags'));
+});

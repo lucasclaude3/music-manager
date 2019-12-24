@@ -9,7 +9,3 @@ export default {
   name: 'music-manager',
 };
 </script>
-
-<style>
-  @import 'assets/scss/main.scss';
-</style>

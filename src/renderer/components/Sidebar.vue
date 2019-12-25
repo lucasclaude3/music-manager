@@ -3,10 +3,11 @@
     sidebar
     <ul>
       <li
-        @click="selectItem(index), chooseItem()"
-        v-for="(tag, index) in this.tags"
-        v-html="tag"
-        v-bind:key="index"
+        class="tag"
+        v-for="tag in orderedTags"
+        v-html="tag.name"
+        v-bind:key="tag.id"
+        @keyup.enter="event => onEnter(event, tag)"
         contenteditable="true"
       ></li>
     </ul>
@@ -24,12 +25,21 @@ export default {
   },
   computed: {
     ...mapState('tags', ['tags']),
+    orderedTags() {
+      return [...this.tags].sort((a, b) => (a.order < b.order ? -1 : 1));
+    },
   },
   methods: {
     ...mapActions({
       loadTags: 'tags/loadTags',
       createTag: 'tags/createTag',
+      updateTag: 'tags/updateTag',
     }),
+    onEnter(event, tag) {
+      const updatedTag = { ...tag };
+      updatedTag.name = event.target.innerHTML;
+      this.updateTag(updatedTag);
+    },
   },
 };
 

@@ -21,8 +21,8 @@ const actions = {
     });
   },
 
-  createTag({ commit }, tag) {
-    ipcRenderer.send('tag:create', tag);
+  createTag({ commit }) {
+    ipcRenderer.send('tag:create');
     ipcRenderer.on('tag:created', (event, tag) => {
       commit({ type: 'ADD_TAG', tag });
     });

@@ -7,8 +7,10 @@
         v-for="(tag, index) in this.tags"
         v-html="tag"
         v-bind:key="index"
+        contenteditable="true"
       ></li>
     </ul>
+    <b-button @click="createTag()" type="button">&#43; Add tag</b-button>
   </nav>
 </template>
 
@@ -21,11 +23,12 @@ export default {
     this.loadTags();
   },
   computed: {
-    ...mapState('Autocomplete', ['tags']),
+    ...mapState('tags', ['tags']),
   },
   methods: {
     ...mapActions({
-      loadTags: 'Autocomplete/loadTags',
+      loadTags: 'tags/loadTags',
+      createTag: 'tags/createTag',
     }),
   },
 };

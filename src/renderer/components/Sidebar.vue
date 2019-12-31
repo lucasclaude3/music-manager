@@ -7,7 +7,7 @@
         v-for="tag in orderedTags"
         v-html="tag.name"
         v-bind:key="tag.id"
-        @keyup.enter="event => onEnter(event, tag)"
+        @keydown="event => onEnter(event, tag)"
         contenteditable="true"
       ></li>
     </ul>
@@ -36,9 +36,13 @@ export default {
       updateTag: 'tags/updateTag',
     }),
     onEnter(event, tag) {
-      const updatedTag = { ...tag };
-      updatedTag.name = event.target.innerHTML;
-      this.updateTag(updatedTag);
+      if ([13, 27].indexOf(event.keyCode) > -1) {
+        event.preventDefault();
+        const updatedTag = { ...tag };
+        updatedTag.name = event.target.innerHTML;
+        this.updateTag(updatedTag);
+        event.target.blur();
+      }
     },
   },
 };

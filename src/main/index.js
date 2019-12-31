@@ -85,7 +85,6 @@ ipcMain.on('tag:create', () => {
 });
 
 ipcMain.on('tag:update', (event, updatedTag) => {
-  console.log(updatedTag);
   const tags = (store.get('tags') || []).filter(t => t.id !== updatedTag.id);
   tags.push(updatedTag);
   store.set({ tags });

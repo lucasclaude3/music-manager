@@ -95,7 +95,7 @@ export default {
     inputSplitted() {
       return this.inputValue.replace(/(\r\n|\n|\r)/gm, ' ').split(' ');
     },
-    ...mapState('Autocomplete', ['tags']),
+    ...mapState('tags', ['tags']),
   },
   watch: {
     inputValue() {
@@ -165,8 +165,8 @@ export default {
       this.createTag(this.currentWord);
     },
     ...mapActions({
-      createTag: 'Autocomplete/createTag',
-      loadTags: 'Autocomplete/loadTags',
+      createTag: 'tags/createTag',
+      loadTags: 'tags/loadTags',
     }),
   },
 };

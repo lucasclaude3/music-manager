@@ -3,12 +3,15 @@
     sidebar
     <ul>
       <li
-        @click="selectItem(index), chooseItem()"
-        v-for="(tag, index) in this.tags"
-        v-html="tag"
-        v-bind:key="index"
+        class="tag"
+        v-for="tag in orderedTags"
+        v-html="tag.name"
+        v-bind:key="tag.id"
+        @keydown="event => onEnter(event, tag)"
+        contenteditable="true"
       ></li>
     </ul>
+    <b-button @click="createTag()" type="button">&#43; Add tag</b-button>
   </nav>
 </template>
 
@@ -21,12 +24,26 @@ export default {
     this.loadTags();
   },
   computed: {
-    ...mapState('Autocomplete', ['tags']),
+    ...mapState('tags', ['tags']),
+    orderedTags() {
+      return [...this.tags].sort((a, b) => (a.order < b.order ? -1 : 1));
+    },
   },
   methods: {
     ...mapActions({
-      loadTags: 'Autocomplete/loadTags',
+      loadTags: 'tags/loadTags',
+      createTag: 'tags/createTag',
+      updateTag: 'tags/updateTag',
     }),
+    onEnter(event, tag) {
+      if ([13, 27].indexOf(event.keyCode) > -1) {
+        event.preventDefault();
+        const updatedTag = { ...tag };
+        updatedTag.name = event.target.innerHTML;
+        this.updateTag(updatedTag);
+        event.target.blur();
+      }
+    },
   },
 };
 

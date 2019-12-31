@@ -1,5 +1,6 @@
 import { app, BrowserWindow, ipcMain } from 'electron' // eslint-disable-line
 import Store from 'electron-store';
+import uuid from 'uuid/v4';
 
 const store = new Store();
 
@@ -70,10 +71,24 @@ app.on('ready', () => {
 })
  */
 
-ipcMain.on('tag:create', (event, tag) => {
-  const tags = store.get('tags');
-  tags.push(tag);
+ipcMain.on('tag:create', () => {
+  const tags = store.get('tags') || [];
+  const newTag = {
+    id: uuid().toString(),
+    name: `New tag ${tags.length + 1}`,
+    created_at: Date.now(),
+    order: tags.length + 1,
+  };
+  tags.push(newTag);
   store.set({ tags });
+  mainWindow.webContents.send('tag:created', newTag);
+});
+
+ipcMain.on('tag:update', (event, updatedTag) => {
+  const tags = (store.get('tags') || []).filter(t => t.id !== updatedTag.id);
+  tags.push(updatedTag);
+  store.set({ tags });
+  mainWindow.webContents.send('tag:updated', updatedTag);
 });
 
 ipcMain.on('tags:load', () => {

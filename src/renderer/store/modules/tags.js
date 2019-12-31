@@ -15,6 +15,9 @@ const mutations = {
     state.tags = state.tags.filter(t => t.id !== payload.tag.id);
     state.tags.push(payload.tag);
   },
+  DELETE_TAG(state, payload) {
+    state.tags = state.tags.filter(t => t.id !== payload.tag.id);
+  },
 };
 
 const actions = {
@@ -38,6 +41,14 @@ const actions = {
     ipcRenderer.on('tag:updated', (event, tag) => {
       commit({ type: 'UPDATE_TAG', tag });
       ipcRenderer.removeAllListeners('tag:updated');
+    });
+  },
+
+  deleteTag({ commit }, tag) {
+    ipcRenderer.send('tag:delete', tag);
+    ipcRenderer.on('tag:deleted', (event, tag) => {
+      commit({ type: 'DELETE_TAG', tag });
+      ipcRenderer.removeAllListeners('tag:deleted');
     });
   },
 };

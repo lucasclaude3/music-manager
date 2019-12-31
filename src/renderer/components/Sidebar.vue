@@ -34,15 +34,23 @@ export default {
       loadTags: 'tags/loadTags',
       createTag: 'tags/createTag',
       updateTag: 'tags/updateTag',
+      deleteTag: 'tags/deleteTag',
     }),
     onEnter(event, tag) {
-      if ([13, 27].indexOf(event.keyCode) > -1) {
-        event.preventDefault();
-        const updatedTag = { ...tag };
+      if ([13, 27].indexOf(event.keyCode) === -1) {
+        return;
+      }
+      event.preventDefault();
+      const updatedTag = { ...tag };
+      if (event.keyCode === 27) {
+        event.target.innerHTML = updatedTag.name;
+      } else if (event.keyCode === 13 && event.target.innerHTML) {
         updatedTag.name = event.target.innerHTML;
         this.updateTag(updatedTag);
-        event.target.blur();
+      } else {
+        this.deleteTag(updatedTag);
       }
+      event.target.blur();
     },
   },
 };

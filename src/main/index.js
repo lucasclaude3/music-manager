@@ -91,6 +91,12 @@ ipcMain.on('tag:update', (event, updatedTag) => {
   mainWindow.webContents.send('tag:updated', updatedTag);
 });
 
+ipcMain.on('tag:delete', (event, deletedTag) => {
+  const tags = (store.get('tags') || []).filter(t => t.id !== deletedTag.id);
+  store.set({ tags });
+  mainWindow.webContents.send('tag:deleted', deletedTag);
+});
+
 ipcMain.on('tags:load', () => {
   mainWindow.webContents.send('tags:loaded', store.get('tags'));
 });

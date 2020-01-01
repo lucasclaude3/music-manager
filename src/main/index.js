@@ -114,3 +114,12 @@ ipcMain.on('tracks:add', (event, files) => {
 ipcMain.on('tracks:load', () => {
   mainWindow.webContents.send('tracks:loaded', store.get('tracks') || []);
 });
+
+ipcMain.on('track:add_tag', (event, { tagId, trackId }) => {
+  const tracks = (store.get('tracks') || []).filter(t => t.id !== trackId);
+  const modifiedTrack = store.get('tracks').find(t => t.id === trackId);
+  modifiedTrack.tag = tagId;
+  tracks.push(modifiedTrack);
+  store.set({ tracks });
+  mainWindow.webContents.send('track:tag_added', modifiedTrack);
+});

@@ -7,7 +7,10 @@
         v-for="tag in orderedTags"
         v-html="tag.name"
         v-bind:key="tag.id"
+        v-bind:id="tag.id"
         @keydown="event => onEnter(event, tag)"
+        @dragover="handleDragTrackover"
+        @drop="handleDropTrack"
         contenteditable="true"
       ></li>
     </ul>
@@ -35,6 +38,7 @@ export default {
       createTag: 'tags/createTag',
       updateTag: 'tags/updateTag',
       deleteTag: 'tags/deleteTag',
+      addTagToTrack: 'tracks/addTagToTrack',
     }),
     onEnter(event, tag) {
       if ([13, 27].indexOf(event.keyCode) === -1) {
@@ -51,6 +55,16 @@ export default {
         this.deleteTag(updatedTag);
       }
       event.target.blur();
+    },
+    handleDragTrackover(event) {
+      event.preventDefault();
+    },
+    handleDropTrack(event) {
+      const tagId = event.target.id;
+      const trackId = event
+        .dataTransfer
+        .getData('text');
+      this.addTagToTrack({ tagId, trackId });
     },
   },
 };

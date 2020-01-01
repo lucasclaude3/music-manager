@@ -15,7 +15,10 @@
         class="track"
         v-for="track in tracks"
         v-html="track.name"
-        v-bind:key="track.id">
+        v-bind:key="track.id"
+        v-bind:id="track.id"
+        draggable="true"
+        @dragstart="handleDragTrack">
       </li>
     </ul>
   </div>
@@ -38,11 +41,18 @@ export default {
       loadTracks: 'tracks/loadTracks',
     }),
     addNewFiles(event) {
-      const newFiles = Array.from(event.target.files).map(file => ({
-        path: file.path,
-        name: file.name,
-      }));
+      const newFiles = Array
+        .from(event.target.files)
+        .map(file => ({
+          path: file.path,
+          name: file.name,
+        }));
       this.addTracks(newFiles);
+    },
+    handleDragTrack(event) {
+      event
+        .dataTransfer
+        .setData('text/plain', event.target.id);
     },
   },
 };

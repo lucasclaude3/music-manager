@@ -11,6 +11,10 @@ const mutations = {
   ADD_TRACKS(state, payload) {
     state.tracks = state.tracks.concat(payload.tracks);
   },
+  UPDATE_TRACK(state, payload) {
+    state.tracks = state.tracks.filter(t => t.id !== payload.track.id);
+    state.tracks.push(payload.track);
+  },
 };
 
 const actions = {
@@ -26,6 +30,14 @@ const actions = {
     ipcRenderer.on('tracks:added', (event, tracks) => {
       commit({ type: 'ADD_TRACKS', tracks });
       ipcRenderer.removeAllListeners('tracks:added');
+    });
+  },
+
+  addTagToTrack({ commit }, { tagId, trackId }) {
+    ipcRenderer.send('track:add_tag', { tagId, trackId });
+    ipcRenderer.on('track:tag_added', (event, track) => {
+      commit({ type: 'UPDATE_TRACK', track });
+      ipcRenderer.removeAllListeners('track:tag_added');
     });
   },
 };

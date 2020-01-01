@@ -98,5 +98,19 @@ ipcMain.on('tag:delete', (event, deletedTag) => {
 });
 
 ipcMain.on('tags:load', () => {
-  mainWindow.webContents.send('tags:loaded', store.get('tags'));
+  mainWindow.webContents.send('tags:loaded', store.get('tags') || []);
+});
+
+ipcMain.on('tracks:add', (event, files) => {
+  files.forEach((f) => {
+    f.id = uuid().toString();
+    f.created_at = Date.now();
+  });
+  const tracks = (store.get('tracks') || []).concat(files);
+  store.set({ tracks });
+  mainWindow.webContents.send('tracks:added', files);
+});
+
+ipcMain.on('tracks:load', () => {
+  mainWindow.webContents.send('tracks:loaded', store.get('tracks') || []);
 });

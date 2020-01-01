@@ -6,7 +6,7 @@ const state = {
 
 const mutations = {
   LOAD_TAGS(state, payload) {
-    state.tags = payload.tags;
+    state.tags = payload.tags || [];
   },
   ADD_TAG(state, payload) {
     state.tags.push(payload.tag);

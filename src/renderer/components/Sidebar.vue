@@ -11,7 +11,8 @@
         @keydown="event => onEnter(event, tag)"
         @dragover="handleDragTrackover"
         @drop="handleDropTrack"
-        contenteditable="true"
+        @dblclick="onDblClick"
+        @blur="onBlur"
       ></li>
     </ul>
     <b-button @click="createTag()" type="button">&#43; Add tag</b-button>
@@ -65,6 +66,12 @@ export default {
         .dataTransfer
         .getData('text');
       this.addTagToTrack({ tagId, trackId });
+    },
+    onDblClick(event) {
+      event.target.contentEditable = true;
+    },
+    onBlur(event) {
+      event.target.contentEditable = false;
     },
   },
 };

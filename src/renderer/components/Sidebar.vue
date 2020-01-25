@@ -10,6 +10,7 @@
         v-bind:id="tag.id"
         @keydown="event => onEnter(event, tag)"
         @dragover="handleDragTrackover"
+        @dragleave="handleDragLeave"
         @drop="handleDropTrack"
         @dblclick="onDblClick"
         @blur="onBlur"
@@ -59,6 +60,10 @@ export default {
     },
     handleDragTrackover(event) {
       event.preventDefault();
+      event.target.classList.add('dragover');
+    },
+    handleDragLeave(event) {
+      event.target.classList.remove('dragover');
     },
     handleDropTrack(event) {
       const tagId = event.target.id;
@@ -66,6 +71,7 @@ export default {
         .dataTransfer
         .getData('text');
       this.addTagToTrack({ tagId, trackId });
+      this.handleDragLeave(event);
     },
     onDblClick(event) {
       event.target.contentEditable = true;
@@ -88,5 +94,9 @@ export default {
     border-right: 1px solid $border-primary;
     background-color: $background-primary;
     color: $text-primary;
+  }
+
+  .dragover {
+    font-weight: 700;
   }
 </style>

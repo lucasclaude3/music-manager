@@ -13,7 +13,7 @@
     <ul>
       <li
         class="track"
-        v-for="track in tracks"
+        v-for="track in orderedTracks"
         v-html="track.name"
         v-bind:key="track.id"
         v-bind:id="track.id"
@@ -34,6 +34,16 @@ export default {
   },
   computed: {
     ...mapState('tracks', ['tracks']),
+    orderedTracks() {
+      return [...this.tracks].sort((a, b) => {
+        if (a.created_at < b.created_at) {
+          return 1;
+        } else if (a.created_at === b.created_at && a.id < b.id) {
+          return 1;
+        }
+        return -1;
+      });
+    },
   },
   methods: {
     ...mapActions({

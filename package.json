@@ -61,6 +61,7 @@
     "bootstrap-vue": "^2.1.0",
     "electron": "^7.1.7",
     "electron-store": "^5.1.0",
+    "ffmetadata": "^1.6.0",
     "terser-webpack-plugin": "^2.3.1",
     "uuid": "^3.3.3",
     "vue": "^2.5.16",

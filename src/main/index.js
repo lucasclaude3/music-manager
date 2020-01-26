@@ -1,8 +1,10 @@
 import { app, BrowserWindow, ipcMain } from 'electron' // eslint-disable-line
 import Store from 'electron-store';
 import uuid from 'uuid/v4';
+import ffmetadata from 'ffmetadata';
 
 const store = new Store();
+store.clear();
 
 /**
  * Set `__static` path to static files in production
@@ -101,11 +103,27 @@ ipcMain.on('tags:load', () => {
   mainWindow.webContents.send('tags:loaded', store.get('tags') || []);
 });
 
+const updateTrack = (trackId, trackFields) => {
+  const tracks = (store.get('tracks') || []).filter(t => t.id !== trackId);
+  let modifiedTrack = store.get('tracks').find(t => t.id === trackId);
+  modifiedTrack = { ...modifiedTrack, ...trackFields };
+  tracks.push(modifiedTrack);
+  store.set({ tracks });
+};
+
 ipcMain.on('tracks:add', (event, files) => {
   files.forEach((f) => {
     f.id = uuid().toString();
     f.created_at = Date.now();
     f.tagBag = [];
+    ffmetadata.read(f.path, (err, data) => {
+      if (err) {
+        console.error('Error reading metadata', err);
+      }
+      f.genre = data ? data.genre : '';
+      updateTrack(f.id, { genre: f.genre });
+      mainWindow.webContents.send('track:updated', f);
+    });
   });
   const tracks = (store.get('tracks') || []).concat(files);
   store.set({ tracks });

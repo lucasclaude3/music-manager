@@ -105,20 +105,25 @@ ipcMain.on('tracks:add', (event, files) => {
   files.forEach((f) => {
     f.id = uuid().toString();
     f.created_at = Date.now();
+    f.tagBag = [];
   });
   const tracks = (store.get('tracks') || []).concat(files);
   store.set({ tracks });
   mainWindow.webContents.send('tracks:added', files);
 });
 
-ipcMain.on('tracks:load', () => {
-  mainWindow.webContents.send('tracks:loaded', store.get('tracks') || []);
+ipcMain.on('tracks:load', (event, tagId) => {
+  let tracks = store.get('tracks') || [];
+  if (tagId) {
+    tracks = tracks.filter(t => t.tagBag.indexOf(tagId) > -1);
+  }
+  mainWindow.webContents.send('tracks:loaded', tracks);
 });
 
 ipcMain.on('track:add_tag', (event, { tagId, trackId }) => {
   const tracks = (store.get('tracks') || []).filter(t => t.id !== trackId);
   const modifiedTrack = store.get('tracks').find(t => t.id === trackId);
-  modifiedTrack.tag = tagId;
+  modifiedTrack.tagBag.push(tagId);
   tracks.push(modifiedTrack);
   store.set({ tracks });
   mainWindow.webContents.send('track:tag_added', modifiedTrack);

@@ -4,6 +4,11 @@
     <ul>
       <li
         class="tag"
+        @click="event => onClick(event)">
+        All tracks
+      </li>
+      <li
+        class="tag"
         v-for="tag in orderedTags"
         v-html="tag.name"
         v-bind:key="tag.id"
@@ -12,9 +17,10 @@
         @dragover="handleDragTrackover"
         @dragleave="handleDragLeave"
         @drop="handleDropTrack"
+        @click="event => onClick(event, tag)"
         @dblclick="onDblClick"
-        @blur="onBlur"
-      ></li>
+        @blur="onBlur">
+      </li>
     </ul>
     <b-button @click="createTag()" type="button">&#43; Add tag</b-button>
   </nav>
@@ -41,6 +47,7 @@ export default {
       updateTag: 'tags/updateTag',
       deleteTag: 'tags/deleteTag',
       addTagToTrack: 'tracks/addTagToTrack',
+      loadTracks: 'tracks/loadTracks',
     }),
     onEnter(event, tag) {
       if ([13, 27].indexOf(event.keyCode) === -1) {
@@ -72,6 +79,9 @@ export default {
         .getData('text');
       this.addTagToTrack({ tagId, trackId });
       this.handleDragLeave(event);
+    },
+    onClick(event, tag) {
+      this.loadTracks(tag ? tag.id : null);
     },
     onDblClick(event) {
       event.target.contentEditable = true;

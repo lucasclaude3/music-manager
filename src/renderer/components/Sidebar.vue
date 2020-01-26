@@ -12,6 +12,7 @@
         @dragover="handleDragTrackover"
         @dragleave="handleDragLeave"
         @drop="handleDropTrack"
+        @click="event => onClick(event, tag)"
         @dblclick="onDblClick"
         @blur="onBlur"
       ></li>
@@ -41,6 +42,7 @@ export default {
       updateTag: 'tags/updateTag',
       deleteTag: 'tags/deleteTag',
       addTagToTrack: 'tracks/addTagToTrack',
+      loadTracks: 'tracks/loadTracks',
     }),
     onEnter(event, tag) {
       if ([13, 27].indexOf(event.keyCode) === -1) {
@@ -72,6 +74,9 @@ export default {
         .getData('text');
       this.addTagToTrack({ tagId, trackId });
       this.handleDragLeave(event);
+    },
+    onClick(event, tag) {
+      this.loadTracks(tag.id);
     },
     onDblClick(event) {
       event.target.contentEditable = true;

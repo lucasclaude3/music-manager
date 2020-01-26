@@ -111,8 +111,12 @@ ipcMain.on('tracks:add', (event, files) => {
   mainWindow.webContents.send('tracks:added', files);
 });
 
-ipcMain.on('tracks:load', () => {
-  mainWindow.webContents.send('tracks:loaded', store.get('tracks') || []);
+ipcMain.on('tracks:load', (event, tagId) => {
+  let tracks = store.get('tracks') || [];
+  if (tagId) {
+    tracks = tracks.filter(t => t.tag === tagId);
+  }
+  mainWindow.webContents.send('tracks:loaded', tracks);
 });
 
 ipcMain.on('track:add_tag', (event, { tagId, trackId }) => {

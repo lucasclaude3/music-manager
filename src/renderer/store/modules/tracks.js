@@ -18,8 +18,8 @@ const mutations = {
 };
 
 const actions = {
-  loadTracks({ commit }) {
-    ipcRenderer.send('tracks:load');
+  loadTracks({ commit }, tagId) {
+    ipcRenderer.send('tracks:load', tagId);
     ipcRenderer.on('tracks:loaded', (event, tracks) => {
       commit({ type: 'LOAD_TRACKS', tracks });
     });

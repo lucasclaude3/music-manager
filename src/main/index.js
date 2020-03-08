@@ -2,9 +2,11 @@ import { app, BrowserWindow, ipcMain } from 'electron' // eslint-disable-line
 import Store from 'electron-store';
 import uuid from 'uuid/v4';
 import ffmetadata from 'ffmetadata';
+import { Promise } from 'bluebird';
 
 const store = new Store();
-store.clear();
+
+const readMetadata = Promise.promisify(ffmetadata.read);
 
 /**
  * Set `__static` path to static files in production
@@ -112,22 +114,33 @@ const updateTrack = (trackId, trackFields) => {
 };
 
 ipcMain.on('tracks:add', (event, files) => {
-  files.forEach((f) => {
-    f.id = uuid().toString();
-    f.created_at = Date.now();
-    f.tagBag = [];
-    ffmetadata.read(f.path, (err, data) => {
-      if (err) {
-        console.error('Error reading metadata', err);
-      }
-      f.genre = data ? data.genre : '';
-      updateTrack(f.id, { genre: f.genre });
-      mainWindow.webContents.send('track:updated', f);
+  const filteredFiles = files
+    .filter(f => f.type.includes('audio') && f.type !== 'audio/mpegurl')
+    .map((f) => {
+      const newFields = {
+        id: uuid().toString(),
+        created_at: Date.now(),
+        tagBag: [],
+      };
+      return { ...f, ...newFields };
     });
-  });
-  const tracks = (store.get('tracks') || []).concat(files);
+  Promise.map(
+    filteredFiles,
+    f => readMetadata(f.path)
+      .then((data) => {
+        f.genre = data ? data.genre : '';
+        updateTrack(f.id, { genre: f.genre });
+        mainWindow.webContents.send('track:updated', f);
+        return Promise.resolve();
+      })
+      .catch((err) => {
+        console.log(err);
+      }),
+    { concurrency: 5 },
+  );
+  const tracks = (store.get('tracks') || []).concat(filteredFiles);
   store.set({ tracks });
-  mainWindow.webContents.send('tracks:added', files);
+  mainWindow.webContents.send('tracks:added', filteredFiles);
 });
 
 ipcMain.on('tracks:load', (event, tagId) => {

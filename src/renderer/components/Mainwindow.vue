@@ -60,6 +60,7 @@ export default {
         .map(file => ({
           path: file.path,
           name: file.name,
+          type: file.type,
         }));
       this.addTracks(newFiles);
     },

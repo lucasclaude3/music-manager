@@ -10,6 +10,10 @@
       type="file"
       multiple
       @change="addNewFiles">
+    <b-button
+      v-if="currentTag !== null"
+      @click="applyCurrentTag()"
+    >Apply current Tag {{ currentTag.name }}</b-button>
     <ul>
       <li
         class="track"
@@ -37,6 +41,7 @@ export default {
   },
   computed: {
     ...mapState('tracks', ['tracks']),
+    ...mapState('tags', ['currentTag']),
     orderedTracks() {
       return [...this.tracks].sort((a, b) => {
         if (a.created_at < b.created_at) {
@@ -53,6 +58,7 @@ export default {
       addTracks: 'tracks/addTracks',
       loadTracks: 'tracks/loadTracks',
       watchTrackModification: 'tracks/watchTrackModification',
+      applyCurrentTag: 'tags/applyCurrentTag',
     }),
     addNewFiles(event) {
       const newFiles = Array

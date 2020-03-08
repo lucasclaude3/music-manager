@@ -2,6 +2,7 @@ import { ipcRenderer } from 'electron';
 
 const state = {
   tags: [],
+  currentTag: null,
 };
 
 const mutations = {
@@ -17,6 +18,9 @@ const mutations = {
   },
   DELETE_TAG(state, payload) {
     state.tags = state.tags.filter(t => t.id !== payload.tag.id);
+  },
+  SET_CURRENT_TAG(state, payload) {
+    state.currentTag = payload.currentTag;
   },
 };
 
@@ -50,6 +54,14 @@ const actions = {
       commit({ type: 'DELETE_TAG', tag });
       ipcRenderer.removeAllListeners('tag:deleted');
     });
+  },
+
+  setCurrentTag({ commit }, currentTag) {
+    commit({ type: 'SET_CURRENT_TAG', currentTag });
+  },
+
+  applyCurrentTag() {
+    ipcRenderer.send('tags:applyToMetadata', state.currentTag);
   },
 };
 

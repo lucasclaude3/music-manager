@@ -1,12 +1,30 @@
 import { app, BrowserWindow, ipcMain } from 'electron' // eslint-disable-line
 import Store from 'electron-store';
 import uuid from 'uuid/v4';
-import ffmetadata from 'ffmetadata';
 import { Promise } from 'bluebird';
+import NodeID3 from 'node-id3';
+
+const readMetadata = filepath =>
+  new Promise((resolve, reject) => {
+    NodeID3.read(filepath, (err, tags) => {
+      if (err) {
+        reject(err);
+      }
+      resolve(tags);
+    });
+  });
+
+const writeMetadata = (filepath, tags) =>
+  new Promise((resolve, reject) => {
+    NodeID3.update(tags, filepath, (err) => {
+      if (err) {
+        reject(err);
+      }
+      resolve();
+    });
+  });
 
 const store = new Store();
-
-const readMetadata = Promise.promisify(ffmetadata.read);
 
 /**
  * Set `__static` path to static files in production
@@ -158,4 +176,18 @@ ipcMain.on('track:add_tag', (event, { tagId, trackId }) => {
   tracks.push(modifiedTrack);
   store.set({ tracks });
   mainWindow.webContents.send('track:tag_added', modifiedTrack);
+});
+
+ipcMain.on('tags:applyToMetadata', (event, currentTag) => {
+  const tracks = (store.get('tracks') || []).filter(t => t.tagBag.indexOf(currentTag.id) > -1);
+  Promise.map(
+    tracks,
+    t => writeMetadata(t.path, {
+      comment: {
+        language: 'eng',
+        text: currentTag.name,
+      },
+    }),
+    { concurrency: 5 },
+  );
 });

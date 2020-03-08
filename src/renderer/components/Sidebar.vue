@@ -50,6 +50,7 @@ export default {
       loadTags: 'tags/loadTags',
       createTag: 'tags/createTag',
       updateTag: 'tags/updateTag',
+      setCurrentTag: 'tags/setCurrentTag',
       deleteTag: 'tags/deleteTag',
       addTagToTrack: 'tracks/addTagToTrack',
       loadTracks: 'tracks/loadTracks',
@@ -88,9 +89,11 @@ export default {
     },
     onClick(event, tag) {
       this.loadTracks(tag.id);
+      this.setCurrentTag(tag);
     },
     onClickAllTracks(event, withoutTags) {
       this.loadAllTracks(withoutTags);
+      this.setCurrentTag(null);
     },
     onDblClick(event) {
       event.target.contentEditable = true;

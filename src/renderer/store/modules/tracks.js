@@ -40,6 +40,12 @@ const actions = {
       ipcRenderer.removeAllListeners('track:tag_added');
     });
   },
+
+  watchTrackModification({ commit }) {
+    ipcRenderer.on('track:updated', (event, track) => {
+      commit({ type: 'UPDATE_TRACK', track });
+    });
+  },
 };
 
 export default {

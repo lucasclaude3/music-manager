@@ -1,8 +1,12 @@
 import { app, BrowserWindow, ipcMain } from 'electron' // eslint-disable-line
 import Store from 'electron-store';
 import uuid from 'uuid/v4';
+import ffmetadata from 'ffmetadata';
+import { Promise } from 'bluebird';
 
 const store = new Store();
+
+const readMetadata = Promise.promisify(ffmetadata.read);
 
 /**
  * Set `__static` path to static files in production
@@ -101,15 +105,42 @@ ipcMain.on('tags:load', () => {
   mainWindow.webContents.send('tags:loaded', store.get('tags') || []);
 });
 
-ipcMain.on('tracks:add', (event, files) => {
-  files.forEach((f) => {
-    f.id = uuid().toString();
-    f.created_at = Date.now();
-    f.tagBag = [];
-  });
-  const tracks = (store.get('tracks') || []).concat(files);
+const updateTrack = (trackId, trackFields) => {
+  const tracks = (store.get('tracks') || []).filter(t => t.id !== trackId);
+  let modifiedTrack = store.get('tracks').find(t => t.id === trackId);
+  modifiedTrack = { ...modifiedTrack, ...trackFields };
+  tracks.push(modifiedTrack);
   store.set({ tracks });
-  mainWindow.webContents.send('tracks:added', files);
+};
+
+ipcMain.on('tracks:add', (event, files) => {
+  const filteredFiles = files
+    .filter(f => f.type.includes('audio') && f.type !== 'audio/mpegurl')
+    .map((f) => {
+      const newFields = {
+        id: uuid().toString(),
+        created_at: Date.now(),
+        tagBag: [],
+      };
+      return { ...f, ...newFields };
+    });
+  Promise.map(
+    filteredFiles,
+    f => readMetadata(f.path)
+      .then((data) => {
+        f.genre = data ? data.genre : '';
+        updateTrack(f.id, { genre: f.genre });
+        mainWindow.webContents.send('track:updated', f);
+        return Promise.resolve();
+      })
+      .catch((err) => {
+        console.log(err);
+      }),
+    { concurrency: 5 },
+  );
+  const tracks = (store.get('tracks') || []).concat(filteredFiles);
+  store.set({ tracks });
+  mainWindow.webContents.send('tracks:added', filteredFiles);
 });
 
 ipcMain.on('tracks:load', (event, tagId) => {

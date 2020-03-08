@@ -14,11 +14,13 @@
       <li
         class="track"
         v-for="track in orderedTracks"
-        v-html="track.name"
         v-bind:key="track.id"
         v-bind:id="track.id"
         draggable="true"
-        @dragstart="handleDragTrack">
+        @dragstart="handleDragTrack"
+      >
+        <span v-html="track.name"></span>
+        <span v-html="track.genre"></span>
       </li>
     </ul>
   </div>
@@ -31,6 +33,7 @@ export default {
   name: 'MainWindow',
   mounted() {
     this.loadTracks();
+    this.watchTrackModification();
   },
   computed: {
     ...mapState('tracks', ['tracks']),
@@ -49,6 +52,7 @@ export default {
     ...mapActions({
       addTracks: 'tracks/addTracks',
       loadTracks: 'tracks/loadTracks',
+      watchTrackModification: 'tracks/watchTrackModification',
     }),
     addNewFiles(event) {
       const newFiles = Array
@@ -56,6 +60,7 @@ export default {
         .map(file => ({
           path: file.path,
           name: file.name,
+          type: file.type,
         }));
       this.addTracks(newFiles);
     },

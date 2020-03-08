@@ -25,6 +25,14 @@ const actions = {
     });
   },
 
+  loadAllTracks({ commit }, withoutTags) {
+    ipcRenderer.send('tracks:load');
+    ipcRenderer.on('tracks:loaded', (event, tracks) => {
+      const tracksToLoad = withoutTags ? tracks.filter(t => t.tagBag.length === 0) : tracks;
+      commit({ type: 'LOAD_TRACKS', tracks: tracksToLoad });
+    });
+  },
+
   addTracks({ commit }, tracks) {
     ipcRenderer.send('tracks:add', tracks);
     ipcRenderer.on('tracks:added', (event, tracks) => {

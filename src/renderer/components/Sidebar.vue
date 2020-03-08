@@ -4,8 +4,13 @@
     <ul>
       <li
         class="tag"
-        @click="event => onClick(event)">
+        @click="event => onClickAllTracks(event, false)">
         All tracks
+      </li>
+      <li
+        class="tag"
+        @click="event => onClickAllTracks(event, true)">
+        Tracks without Tags
       </li>
       <li
         class="tag"
@@ -48,6 +53,7 @@ export default {
       deleteTag: 'tags/deleteTag',
       addTagToTrack: 'tracks/addTagToTrack',
       loadTracks: 'tracks/loadTracks',
+      loadAllTracks: 'tracks/loadAllTracks',
     }),
     onEnter(event, tag) {
       if ([13, 27].indexOf(event.keyCode) === -1) {
@@ -81,7 +87,10 @@ export default {
       this.handleDragLeave(event);
     },
     onClick(event, tag) {
-      this.loadTracks(tag ? tag.id : null);
+      this.loadTracks(tag.id);
+    },
+    onClickAllTracks(event, withoutTags) {
+      this.loadAllTracks(withoutTags);
     },
     onDblClick(event) {
       event.target.contentEditable = true;

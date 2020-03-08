@@ -2,5 +2,5 @@
 
 - [x] Show metadata
 - [x] Handle concurrency for metadata retrieval
-- [ ] Update metadata (when?? -> batch update to confirm)
-- [ ] Select multiple tracks at once
+- [ ] Update comments with current Tag
+- [ ] Select multiple tracks at once to drag and drop

@@ -13,20 +13,26 @@ import { Howl } from 'howler';
 import dataurl from 'dataurl';
 import fs from 'fs';
 
+let sound;
+
 export default {
   name: 'Reader',
-  watch: {
-    currentTrack: {
-      handler(newTrack) {
-        this.playTrack(newTrack);
-      },
-    },
+  mounted() {
+    this.$store.subscribe((mutation, state) => {
+      if (mutation.type === 'tracks/PLAY_TRACK') {
+        this.playTrack(state.tracks.currentTrack);
+      }
+    });
   },
   computed: {
     ...mapState('tracks', ['currentTrack']),
   },
   methods: {
     playTrack(track) {
+      if (sound) {
+        sound.stop();
+        sound.unload();
+      }
       if (!track || !track.path) {
         return Promise.reject;
       }
@@ -37,7 +43,7 @@ export default {
         });
       });
       return songPromise.then((data) => {
-        const sound = new Howl({
+        sound = new Howl({
           src: [data],
           html5: true,
         });

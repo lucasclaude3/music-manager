@@ -6,4 +6,4 @@
 - [ ] Apply all possible tags to the comments
 - [ ] Implement quick search in tracks - https://github.com/nextapps-de/flexsearch
 - [ ] Remove tags and tracks duplicates
-- [ ] Work on design (!!)
+- [ ] Work on design (!!) https://www.flaticon.com/packs/solid-media-elements

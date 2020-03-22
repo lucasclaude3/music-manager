@@ -1,9 +1,17 @@
 <template>
   <div class="reader">
-    <div>Reader</div>
-    <div>{{ currentTrack.name }}</div>
-    <div>{{ currentTrack.genre }}</div>
-    <div>{{ currentTrack.comment }}</div>
+    <div class="track-info-container">
+      <div class="track-info">currentTrack.name</div>
+      <div class="track-info">
+        currentTrack.genre - currentTrack.comment
+      </div>
+    </div>
+    <div class="svgs-container">
+      <svgicon icon="fast-forward" width="22" height="18" color="black" dir="down"></svgicon>
+      <svgicon icon="play" width="33" height="27" color="black"></svgicon>
+      <svgicon icon="fast-forward" width="22" height="18" color="black"></svgicon>
+    </div>
+    <b-progress class="mt-2" :max="100"></b-progress>
   </div>
 </template>
 
@@ -12,6 +20,9 @@ import { mapState } from 'vuex';
 import { Howl } from 'howler';
 import dataurl from 'dataurl';
 import fs from 'fs';
+import '@/assets/compiled-icons/play';
+import '@/assets/compiled-icons/stop';
+import '@/assets/compiled-icons/fast-forward';
 
 let sound;
 
@@ -57,7 +68,33 @@ export default {
 <style scoped lang="scss">
   .reader {
     width: 100%;
-    height: 100px;
+    height: 130px;
     border-bottom: 1px solid black;
+    margin-top: 10px;
+  }
+
+  .track-info-container {
+    width: 300px;
+    height: 60px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .track-info {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    width: 300px;
+  }
+
+  .svgs-container {
+    width: 100px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .progress {
+    width: 400px;
+    margin: 0 auto;
   }
 </style>

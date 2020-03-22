@@ -182,12 +182,15 @@ ipcMain.on('tags:applyToMetadata', (event, currentTag) => {
   const tracks = (store.get('tracks') || []).filter(t => t.tagBag.indexOf(currentTag.id) > -1);
   Promise.map(
     tracks,
-    t => writeMetadata(t.path, {
-      comment: {
-        language: 'eng',
-        text: currentTag.name,
-      },
-    }),
+    (t) => {
+      updateTrack(t.id, { comment: currentTag.name });
+      return writeMetadata(t.path, {
+        comment: {
+          language: 'eng',
+          text: currentTag.name,
+        },
+      });
+    },
     { concurrency: 5 },
   );
 });

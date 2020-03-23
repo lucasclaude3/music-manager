@@ -26,8 +26,17 @@
         dir="down"
       ></svgicon>
       <svgicon
-        @click="pause()"
+        v-bind:class="{ hidden: isPlaying }"
+        @click="play()"
         icon="play"
+        width="33"
+        height="27"
+        color="black"
+      ></svgicon>
+      <svgicon
+        v-bind:class="{ hidden: !isPlaying }"
+        @click="pause()"
+        icon="pause"
         width="33"
         height="27"
         color="black"
@@ -50,13 +59,18 @@ import { Howl } from 'howler';
 import dataurl from 'dataurl';
 import fs from 'fs';
 import '@/assets/compiled-icons/play';
+import '@/assets/compiled-icons/pause';
 import '@/assets/compiled-icons/stop';
 import '@/assets/compiled-icons/fast-forward';
 
-let sound;
 
 export default {
   name: 'Reader',
+  data() {
+    return {
+      sound: null,
+    };
+  },
   mounted() {
     this.$store.subscribe((mutation, state) => {
       if (mutation.type === 'tracks/PLAY_TRACK') {
@@ -66,12 +80,15 @@ export default {
   },
   computed: {
     ...mapState('tracks', ['currentTrack']),
+    isPlaying() {
+      return this.sound ? this.sound.playing() : false;
+    },
   },
   methods: {
     playTrack(track) {
-      if (sound) {
-        sound.stop();
-        sound.unload();
+      if (this.sound) {
+        this.sound.stop();
+        this.sound.unload();
       }
       if (!track || !track.path) {
         return Promise.reject;
@@ -83,11 +100,11 @@ export default {
         });
       });
       return songPromise.then((data) => {
-        sound = new Howl({
+        this.sound = new Howl({
           src: [data],
           html5: true,
         });
-        sound.play();
+        this.sound.play();
       });
     },
 
@@ -100,7 +117,15 @@ export default {
     },
 
     pause() {
-      console.log('yo');
+      if (this.sound) {
+        this.sound.pause();
+      }
+    },
+
+    play() {
+      if (this.sound) {
+        this.sound.play();
+      }
     },
   },
 };

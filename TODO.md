@@ -1,6 +1,7 @@
 ### Next tasks to handle
 
 - [x] Update comments with current Tag
+- [x] Implement basic audio player
 - [ ] Watch current track modification
 - [ ] Select multiple tracks at once to drag and drop
 - [ ] Apply all possible tags to the comments

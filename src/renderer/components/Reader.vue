@@ -1,15 +1,44 @@
 <template>
   <div class="reader">
-    <div class="track-info-container">
-      <div class="track-info">currentTrack.name</div>
+    <div
+      class="track-info-container"
+      v-bind:class="{ hidden: !currentTrack.name }"
+    >
+      <div class="track-info">{{ currentTrack.name }}</div>
       <div class="track-info">
-        currentTrack.genre - currentTrack.comment
+        <span>{{ currentTrack.genre || 'Unknown genre' }}</span>
+        <span v-show="currentTrack.comment"> - {{ currentTrack.comment }}</span>
       </div>
     </div>
+    <div
+      class="track-info-container placeholder"
+      v-bind:class="{ hidden: !!currentTrack.name }"
+    >
+      POUET
+    </div>
     <div class="svgs-container">
-      <svgicon icon="fast-forward" width="22" height="18" color="black" dir="down"></svgicon>
-      <svgicon icon="play" width="33" height="27" color="black"></svgicon>
-      <svgicon icon="fast-forward" width="22" height="18" color="black"></svgicon>
+      <svgicon
+        @click="playPreviousSong()"
+        icon="fast-forward"
+        width="22"
+        height="18"
+        color="black"
+        dir="down"
+      ></svgicon>
+      <svgicon
+        @click="pause()"
+        icon="play"
+        width="33"
+        height="27"
+        color="black"
+      ></svgicon>
+      <svgicon
+        @click="playNextSong()"
+        icon="fast-forward"
+        width="22"
+        height="18"
+        color="black"
+      ></svgicon>
     </div>
     <b-progress class="mt-2" :max="100"></b-progress>
   </div>
@@ -60,6 +89,18 @@ export default {
         });
         sound.play();
       });
+    },
+
+    playPreviousSong() {
+      console.log('yo');
+    },
+
+    playNextSong() {
+      console.log('yo');
+    },
+
+    pause() {
+      console.log('yo');
     },
   },
 };

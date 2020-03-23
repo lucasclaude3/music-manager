@@ -1,19 +1,13 @@
 <template>
   <div class="reader">
-    <div
-      class="track-info-container"
-      v-bind:class="{ hidden: !currentTrack.name }"
-    >
+    <div v-if="currentTrack" class="track-info-container">
       <div class="track-info">{{ currentTrack.name }}</div>
       <div class="track-info">
         <span>{{ currentTrack.genre || 'Unknown genre' }}</span>
         <span v-show="currentTrack.comment"> - {{ currentTrack.comment }}</span>
       </div>
     </div>
-    <div
-      class="track-info-container placeholder"
-      v-bind:class="{ hidden: !!currentTrack.name }"
-    >
+    <div v-if="!currentTrack" class="track-info-container placeholder">
       POUET
     </div>
     <div class="svgs-container">
@@ -54,7 +48,7 @@
 </template>
 
 <script>
-import { mapState } from 'vuex';
+import { mapState, mapActions } from 'vuex';
 import { Howl } from 'howler';
 import dataurl from 'dataurl';
 import fs from 'fs';
@@ -73,18 +67,21 @@ export default {
   },
   mounted() {
     this.$store.subscribe((mutation, state) => {
-      if (mutation.type === 'tracks/PLAY_TRACK') {
+      if (mutation.type === 'tracks/LAUNCH_TRACK') {
         this.playTrack(state.tracks.currentTrack);
       }
     });
   },
   computed: {
-    ...mapState('tracks', ['currentTrack']),
+    ...mapState('tracks', ['tracks', 'playlist', 'currentTrack']),
     isPlaying() {
       return this.sound ? this.sound.playing() : false;
     },
   },
   methods: {
+    ...mapActions({
+      launchTrack: 'tracks/launchTrack',
+    }),
     playTrack(track) {
       if (this.sound) {
         this.sound.stop();
@@ -109,11 +106,19 @@ export default {
     },
 
     playPreviousSong() {
-      console.log('yo');
+      const i = this.playlist.map(t => t.id).indexOf(this.currentTrack.id);
+      if (i > -1) {
+        this.launchTrack(this.playlist[Math.max(i - 1, 0)]);
+      }
     },
 
     playNextSong() {
-      console.log('yo');
+      const i = this.playlist.map(t => t.id).indexOf(this.currentTrack.id);
+      if (i > -1 && i < this.playlist.length - 1) {
+        this.launchTrack(this.playlist[i + 1]);
+      } else if (i === -1) { // it means we are in another tag library
+        this.launchTrack(this.tracks[0]);
+      }
     },
 
     pause() {

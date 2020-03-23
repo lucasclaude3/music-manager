@@ -2,11 +2,8 @@ import { ipcRenderer } from 'electron';
 
 const state = {
   tracks: [],
-  currentTrack: {
-    name: null,
-    genre: null,
-    comment: null,
-  },
+  currentTrack: null,
+  playlist: [],
 };
 
 const mutations = {
@@ -20,8 +17,9 @@ const mutations = {
     state.tracks = state.tracks.filter(t => t.id !== payload.track.id);
     state.tracks.push(payload.track);
   },
-  PLAY_TRACK(state, payload) {
+  LAUNCH_TRACK(state, payload) {
     state.currentTrack = payload.track;
+    state.playlist.push(payload.track);
   },
 };
 
@@ -63,8 +61,8 @@ const actions = {
     });
   },
 
-  playTrack({ commit }, track) {
-    commit({ type: 'PLAY_TRACK', track });
+  launchTrack({ commit }, track) {
+    commit({ type: 'LAUNCH_TRACK', track });
   },
 };
 

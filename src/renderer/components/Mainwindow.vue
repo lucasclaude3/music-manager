@@ -22,7 +22,7 @@
         v-bind:id="track.id"
         draggable="true"
         @dragstart="handleDragTrack"
-        @dblclick="() => playTrack(track)"
+        @dblclick="() => launchTrack(track)"
       >
         <span v-html="track.name"></span>
         <span v-html="track.genre"></span>
@@ -60,7 +60,7 @@ export default {
       loadTracks: 'tracks/loadTracks',
       watchTrackModification: 'tracks/watchTrackModification',
       applyCurrentTag: 'tags/applyCurrentTag',
-      playTrack: 'tracks/playTrack',
+      launchTrack: 'tracks/launchTrack',
     }),
     addNewFiles(event) {
       const newFiles = Array

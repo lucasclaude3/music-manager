@@ -40,10 +40,13 @@ const actions = {
     });
   },
 
-  updateTag({ commit }, tag) {
+  updateTag({ commit, state }, tag) {
     ipcRenderer.send('tag:update', tag);
     ipcRenderer.on('tag:updated', (event, tag) => {
       commit({ type: 'UPDATE_TAG', tag });
+      if (state.currentTag && state.currentTag.id === tag.id) {
+        commit({ type: 'SET_CURRENT_TAG', currentTag: tag });
+      }
       ipcRenderer.removeAllListeners('tag:updated');
     });
   },

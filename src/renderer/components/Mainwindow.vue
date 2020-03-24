@@ -26,6 +26,7 @@
       >
         <span v-html="track.name"></span>
         <span v-html="track.genre"></span>
+        <span v-html="track.comment"></span>
       </li>
     </ul>
   </div>

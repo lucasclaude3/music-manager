@@ -21,6 +21,9 @@ const mutations = {
     state.currentTrack = payload.track;
     state.playlist.push(payload.track);
   },
+  UPDATE_CURRENT_TRACK(state, payload) {
+    state.currentTrack = payload.currentTrack;
+  },
 };
 
 const actions = {
@@ -55,9 +58,12 @@ const actions = {
     });
   },
 
-  watchTrackModification({ commit }) {
+  watchTrackModification({ commit, state }) {
     ipcRenderer.on('track:updated', (event, track) => {
       commit({ type: 'UPDATE_TRACK', track });
+      if (state.currentTrack && state.currentTrack.id === track.id) {
+        commit({ type: 'UPDATE_CURRENT_TRACK', currentTrack: track });
+      }
     });
   },
 

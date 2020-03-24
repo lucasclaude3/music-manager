@@ -183,7 +183,9 @@ ipcMain.on('tags:applyToMetadata', (event, currentTag) => {
   Promise.map(
     tracks,
     (t) => {
+      t.comment = currentTag.name;
       updateTrack(t.id, { comment: currentTag.name });
+      mainWindow.webContents.send('track:updated', t);
       return writeMetadata(t.path, {
         comment: {
           language: 'eng',

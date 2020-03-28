@@ -1,8 +1,9 @@
 import { app, BrowserWindow, ipcMain } from 'electron' // eslint-disable-line
 import Store from 'electron-store';
-import uuid from 'uuid/v4';
 import { Promise } from 'bluebird';
 import NodeID3 from 'node-id3';
+import BulkSearch from 'bulksearch';
+
 
 const readMetadata = filepath =>
   new Promise((resolve, reject) => {
@@ -25,6 +26,21 @@ const writeMetadata = (filepath, tags) =>
   });
 
 const store = new Store();
+// store.clear();
+const mainIndex = new BulkSearch();
+const tracks = store.get('tracks') || [];
+tracks.forEach((t) => {
+  mainIndex.add(t.id, t.name);
+});
+
+const autoId = (() => {
+  let seed = store.get('seed') || 0;
+  return () => {
+    seed += 1;
+    store.set({ seed });
+    return seed;
+  };
+})();
 
 /**
  * Set `__static` path to static files in production
@@ -96,7 +112,7 @@ app.on('ready', () => {
 ipcMain.on('tag:create', () => {
   const tags = store.get('tags') || [];
   const newTag = {
-    id: uuid().toString(),
+    id: autoId(),
     name: `New tag ${tags.length + 1}`,
     created_at: Date.now(),
     order: tags.length + 1,
@@ -136,7 +152,7 @@ ipcMain.on('tracks:add', (event, files) => {
     .filter(f => f.type.includes('audio') && f.type !== 'audio/mpegurl')
     .map((f) => {
       const newFields = {
-        id: uuid().toString(),
+        id: autoId(),
         created_at: Date.now(),
         tagBag: [],
       };
@@ -158,6 +174,12 @@ ipcMain.on('tracks:add', (event, files) => {
   );
   const tracks = (store.get('tracks') || []).concat(filteredFiles);
   store.set({ tracks });
+
+  tracks.forEach((t) => {
+    mainIndex.add(t.id, t.name);
+  });
+  store.set({ mainIndex });
+
   mainWindow.webContents.send('tracks:added', filteredFiles);
 });
 
@@ -170,9 +192,9 @@ ipcMain.on('tracks:load', (event, tagId) => {
 });
 
 ipcMain.on('track:add_tag', (event, { tagId, trackId }) => {
-  const tracks = (store.get('tracks') || []).filter(t => t.id !== trackId);
-  const modifiedTrack = store.get('tracks').find(t => t.id === trackId);
-  modifiedTrack.tagBag.push(tagId);
+  const tracks = (store.get('tracks') || []).filter(t => t.id !== parseInt(trackId, 10));
+  const modifiedTrack = store.get('tracks').find(t => t.id === parseInt(trackId, 10));
+  modifiedTrack.tagBag.push(parseInt(tagId, 10));
   tracks.push(modifiedTrack);
   store.set({ tracks });
   mainWindow.webContents.send('track:tag_added', modifiedTrack);
@@ -195,4 +217,14 @@ ipcMain.on('tags:applyToMetadata', (event, currentTag) => {
     },
     { concurrency: 5 },
   );
+});
+
+ipcMain.on('track:search', (event, { searchTerms, tag }) => {
+  let tracks = (store.get('tracks') || []);
+  if (searchTerms.length > 0) {
+    const tracksIds = mainIndex.search(searchTerms);
+    tracks = tracks
+      .filter(t => tracksIds.indexOf(t.id) > -1 && (!tag || t.tagBag.indexOf(tag.id) > -1));
+  }
+  mainWindow.webContents.send('tracks:loaded', tracks);
 });

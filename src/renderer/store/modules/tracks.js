@@ -31,6 +31,7 @@ const actions = {
     ipcRenderer.send('tracks:load', tagId);
     ipcRenderer.on('tracks:loaded', (event, tracks) => {
       commit({ type: 'LOAD_TRACKS', tracks });
+      ipcRenderer.removeAllListeners('tracks:loaded');
     });
   },
 
@@ -39,6 +40,7 @@ const actions = {
     ipcRenderer.on('tracks:loaded', (event, tracks) => {
       const tracksToLoad = withoutTags ? tracks.filter(t => t.tagBag.length === 0) : tracks;
       commit({ type: 'LOAD_TRACKS', tracks: tracksToLoad });
+      ipcRenderer.removeAllListeners('tracks:loaded');
     });
   },
 
@@ -69,6 +71,15 @@ const actions = {
 
   launchTrack({ commit }, track) {
     commit({ type: 'LAUNCH_TRACK', track });
+  },
+
+  searchTrack({ commit }, { searchTerms, tag }) {
+    ipcRenderer.send('track:search', { searchTerms, tag });
+    ipcRenderer.on('tracks:loaded', (event, tracks) => {
+      const tracksToLoad = tag ? tracks.filter(t => t.tagBag.indexOf(tag.id) > -1) : tracks;
+      commit({ type: 'LOAD_TRACKS', tracks: tracksToLoad });
+      ipcRenderer.removeAllListeners('tracks:loaded');
+    });
   },
 };
 

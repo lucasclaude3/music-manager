@@ -6,5 +6,8 @@
 - [x] Select multiple tracks at once to drag and drop
 - [x] Apply all possible tags to the comments (what format? JSON? CSV?)
 - [x] Implement quick search in tracks - https://github.com/nextapps-de/flexsearch
-- [ ] Remove tags and tracks duplicates
+- [x] Remove tags and tracks duplicates
+- [ ] Update comments when modifiying a tag name
 - [ ] Work on design (!!) https://www.flaticon.com/packs/solid-media-elements
+- [ ] Load tags from another pc
+- [ ] Reset tags that are not used anymore

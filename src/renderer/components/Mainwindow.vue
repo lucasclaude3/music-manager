@@ -29,14 +29,21 @@
         class="track"
         v-for="track in orderedTracks"
         v-bind:key="track.id"
-        v-bind:id="track.id"
+        v-bind:id="track.index"
+        tabindex="0"
         draggable="true"
         @dragstart="handleDragTrack"
         @dblclick="() => launchTrack(track)"
+        @click.exact="handleFocus"
+        @click.shift="handleFocusShift"
+        @blur="handleBlur"
+        v-bind:class="{ background: firstSelectedElement
+                                 && track.index >= firstSelectedElement.id
+                                 && track.index <= secondSelectedElement.id }"
       >
-        <span v-html="track.name"></span>
-        <span v-html="track.genre"></span>
-        <span v-html="track.comment"></span>
+        <span class="no-pointer-events" v-html="track.name"></span>
+        <span class="no-pointer-events" v-html="track.genre"></span>
+        <span class="no-pointer-events" v-html="track.comment"></span>
       </li>
     </ul>
   </div>
@@ -50,6 +57,8 @@ export default {
   data() {
     return {
       searchTerms: '',
+      firstSelectedElement: null,
+      secondSelectedElement: null,
     };
   },
   mounted() {
@@ -60,7 +69,7 @@ export default {
     ...mapState('tracks', ['tracks']),
     ...mapState('tags', ['currentTag']),
     orderedTracks() {
-      return [...this.tracks].sort((a, b) => {
+      const tmpTracks = [...this.tracks].sort((a, b) => {
         if (a.created_at < b.created_at) {
           return 1;
         } else if (a.created_at === b.created_at && a.id < b.id) {
@@ -68,6 +77,10 @@ export default {
         }
         return -1;
       });
+      tmpTracks.forEach((t, index) => {
+        t.index = index;
+      });
+      return tmpTracks;
     },
   },
   methods: {
@@ -90,9 +103,18 @@ export default {
       this.addTracks(newFiles);
     },
     handleDragTrack(event) {
+      if (this.firstSelectedElement === null
+        || event.target.id < this.firstSelectedElement.id
+        || event.target.id > this.secondSelectedElement.id) {
+        this.handleFocus(event);
+      }
+      const selectedTracks = this.orderedTracks
+        .filter(t => t.index >= this.firstSelectedElement.id
+                  && t.index <= this.secondSelectedElement.id)
+        .map(t => t.id);
       event
         .dataTransfer
-        .setData('text/plain', event.target.id);
+        .setData('text/plain', selectedTracks);
     },
     onNewChar(event, searchTerms) {
       let searchTermsUpdated;
@@ -106,9 +128,29 @@ export default {
       }
       this.searchTrack({ searchTerms: searchTermsUpdated, tag: this.currentTag });
     },
+    handleFocus(event) {
+      this.firstSelectedElement = event.target;
+      this.secondSelectedElement = event.target;
+    },
+    handleFocusShift(event) {
+      if (event.target.id < this.firstSelectedElement.id) {
+        this.firstSelectedElement = event.target;
+        return;
+      }
+      this.secondSelectedElement = event.target;
+    },
+    handleBlur(event) {
+      if (!event.relatedTarget || !event.relatedTarget.classList.contains('track')) {
+        this.firstSelectedElement = null;
+        this.secondSelectedElement = null;
+      }
+    },
   },
 };
 </script>
 
 <style lang="scss">
+  .background {
+    background-color: gray;
+  }
 </style>

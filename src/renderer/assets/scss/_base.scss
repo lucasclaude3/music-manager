@@ -1,3 +1,4 @@
+// SVG Icons CSS
 .svg-icon {
     display: inline-block;
     width: 16px;
@@ -30,6 +31,11 @@
     transform: rotate(-90deg);
 }
 
+// Common CSS
 .hidden {
     display: none;
+}
+
+.no-pointer-events {
+    pointer-events: none;
 }

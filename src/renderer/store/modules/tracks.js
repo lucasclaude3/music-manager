@@ -52,11 +52,11 @@ const actions = {
     });
   },
 
-  addTagToTrack({ commit }, { tagId, trackId }) {
-    ipcRenderer.send('track:add_tag', { tagId, trackId });
-    ipcRenderer.on('track:tag_added', (event, track) => {
+  addTagToTracks({ commit }, { tagId, trackIds }) {
+    ipcRenderer.send('tracks:addTag', { tagId, trackIds });
+    ipcRenderer.on('track:tagAdded', (event, track) => {
       commit({ type: 'UPDATE_TRACK', track });
-      ipcRenderer.removeAllListeners('track:tag_added');
+      ipcRenderer.removeAllListeners('track:tagAdded');
     });
   },
 

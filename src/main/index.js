@@ -32,6 +32,7 @@ const tracks = store.get('tracks') || [];
 tracks.forEach((t) => {
   mainIndex.add(t.id, t.name);
 });
+store.set({ tracks });
 
 const autoId = (() => {
   let seed = store.get('seed') || 0;
@@ -140,7 +141,7 @@ ipcMain.on('tags:load', () => {
 });
 
 const updateTrack = (trackId, trackFields) => {
-  const tracks = (store.get('tracks') || []).filter(t => t.id !== trackId);
+  const tracks = store.get('tracks').filter(t => t.id !== trackId);
   let modifiedTrack = store.get('tracks').find(t => t.id === trackId);
   modifiedTrack = { ...modifiedTrack, ...trackFields };
   tracks.push(modifiedTrack);
@@ -172,7 +173,7 @@ ipcMain.on('tracks:add', (event, files) => {
       }),
     { concurrency: 5 },
   );
-  const tracks = (store.get('tracks') || []).concat(filteredFiles);
+  const tracks = store.get('tracks').concat(filteredFiles);
   store.set({ tracks });
 
   tracks.forEach((t) => {
@@ -191,17 +192,19 @@ ipcMain.on('tracks:load', (event, tagId) => {
   mainWindow.webContents.send('tracks:loaded', tracks);
 });
 
-ipcMain.on('track:add_tag', (event, { tagId, trackId }) => {
-  const tracks = (store.get('tracks') || []).filter(t => t.id !== parseInt(trackId, 10));
-  const modifiedTrack = store.get('tracks').find(t => t.id === parseInt(trackId, 10));
-  modifiedTrack.tagBag.push(parseInt(tagId, 10));
-  tracks.push(modifiedTrack);
+ipcMain.on('tracks:addTag', (event, { tagId, trackIds }) => {
+  const tracks = store.get('tracks').filter(t => trackIds.indexOf(t.id) === -1);
+  const modifiedTracks = store.get('tracks').filter(t => trackIds.indexOf(t.id) > -1);
+  modifiedTracks.forEach((t) => {
+    t.tagBag.push(parseInt(tagId, 10));
+    tracks.push(t);
+    mainWindow.webContents.send('track:tagAdded', t);
+  });
   store.set({ tracks });
-  mainWindow.webContents.send('track:tag_added', modifiedTrack);
 });
 
 ipcMain.on('tags:applyToMetadata', (event, currentTag) => {
-  const tracks = (store.get('tracks') || []).filter(t => t.tagBag.indexOf(currentTag.id) > -1);
+  const tracks = store.get('tracks').filter(t => t.tagBag.indexOf(currentTag.id) > -1);
   Promise.map(
     tracks,
     (t) => {
@@ -220,11 +223,11 @@ ipcMain.on('tags:applyToMetadata', (event, currentTag) => {
 });
 
 ipcMain.on('track:search', (event, { searchTerms, tag }) => {
-  let tracks = (store.get('tracks') || []);
+  let tracks = store.get('tracks');
   if (searchTerms.length > 0) {
-    const tracksIds = mainIndex.search(searchTerms);
+    const trackIds = mainIndex.search(searchTerms);
     tracks = tracks
-      .filter(t => tracksIds.indexOf(t.id) > -1 && (!tag || t.tagBag.indexOf(tag.id) > -1));
+      .filter(t => trackIds.indexOf(t.id) > -1 && (!tag || t.tagBag.indexOf(tag.id) > -1));
   }
   mainWindow.webContents.send('tracks:loaded', tracks);
 });

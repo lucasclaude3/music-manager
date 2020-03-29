@@ -52,7 +52,7 @@ export default {
       updateTag: 'tags/updateTag',
       setCurrentTag: 'tags/setCurrentTag',
       deleteTag: 'tags/deleteTag',
-      addTagToTrack: 'tracks/addTagToTrack',
+      addTagToTracks: 'tracks/addTagToTracks',
       loadTracks: 'tracks/loadTracks',
       loadAllTracks: 'tracks/loadAllTracks',
     }),
@@ -81,10 +81,12 @@ export default {
     },
     handleDropTrack(event) {
       const tagId = event.target.id;
-      const trackId = event
+      const trackIds = event
         .dataTransfer
-        .getData('text');
-      this.addTagToTrack({ tagId, trackId });
+        .getData('text')
+        .split(',')
+        .map(t => parseInt(t, 10));
+      this.addTagToTracks({ tagId, trackIds });
       this.handleDragLeave(event);
     },
     onClick(event, tag) {

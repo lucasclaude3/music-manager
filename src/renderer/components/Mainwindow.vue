@@ -43,7 +43,7 @@
       >
         <span class="no-pointer-events" v-html="track.name"></span>
         <span class="no-pointer-events" v-html="track.genre"></span>
-        <span class="no-pointer-events" v-html="track.comment"></span>
+        <span class="no-pointer-events" v-html="track.shortComment"></span>
       </li>
     </ul>
   </div>

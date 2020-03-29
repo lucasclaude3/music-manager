@@ -146,6 +146,7 @@ const updateTrack = (trackId, trackFields) => {
   modifiedTrack = { ...modifiedTrack, ...trackFields };
   tracks.push(modifiedTrack);
   store.set({ tracks });
+  return modifiedTrack;
 };
 
 ipcMain.on('tracks:add', (event, files) => {
@@ -161,11 +162,17 @@ ipcMain.on('tracks:add', (event, files) => {
     });
   Promise.map(
     filteredFiles,
-    f => readMetadata(f.path)
+    t => readMetadata(t.path)
       .then((data) => {
-        f.genre = data ? data.genre : '';
-        updateTrack(f.id, { genre: f.genre });
-        mainWindow.webContents.send('track:updated', f);
+        if (!data) {
+          return Promise.reject(new Error('No metadata found'));
+        }
+        const modifiedTrack = updateTrack(t.id, {
+          genre: data.genre,
+          shortComment: data.comment && data.comment.text,
+          metadataComment: data.comment && data.comment.text,
+        });
+        mainWindow.webContents.send('track:updated', modifiedTrack);
         return Promise.resolve();
       })
       .catch((err) => {
@@ -196,25 +203,39 @@ ipcMain.on('tracks:addTag', (event, { tagId, trackIds }) => {
   const tracks = store.get('tracks').filter(t => trackIds.indexOf(t.id) === -1);
   const modifiedTracks = store.get('tracks').filter(t => trackIds.indexOf(t.id) > -1);
   modifiedTracks.forEach((t) => {
-    t.tagBag.push(parseInt(tagId, 10));
+    if (t.tagBag.indexOf(parseInt(tagId, 10)) === -1) {
+      t.tagBag.push(parseInt(tagId, 10));
+    }
     tracks.push(t);
     mainWindow.webContents.send('track:tagAdded', t);
   });
   store.set({ tracks });
 });
 
-ipcMain.on('tags:applyToMetadata', (event, currentTag) => {
+ipcMain.on('tag:applyToMetadata', (event, currentTag) => {
   const tracks = store.get('tracks').filter(t => t.tagBag.indexOf(currentTag.id) > -1);
   Promise.map(
     tracks,
     (t) => {
-      t.comment = currentTag.name;
-      updateTrack(t.id, { comment: currentTag.name });
-      mainWindow.webContents.send('track:updated', t);
+      let comments = [];
+      if (t.metadataComment.indexOf('[Custom Tags]') !== 0) {
+        comments = [currentTag.name.trim()];
+      } else {
+        const previousList = t.metadataComment.replace('[Custom Tags]', '').trim();
+        comments = previousList.split(' - ').map(c => c.trim());
+        if (comments.indexOf(currentTag.name.trim()) === -1) {
+          comments.push(currentTag.name.trim());
+        }
+      }
+      const modifiedTrack = updateTrack(t.id, {
+        shortComment: comments.join(' - '),
+        metadataComment: `[Custom Tags] ${comments.join(' - ')}`,
+      });
+      mainWindow.webContents.send('track:updated', modifiedTrack);
       return writeMetadata(t.path, {
         comment: {
           language: 'eng',
-          text: currentTag.name,
+          text: `[Custom Tags] ${comments.join(' - ')}`,
         },
       });
     },

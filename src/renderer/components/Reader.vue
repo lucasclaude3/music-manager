@@ -3,8 +3,7 @@
     <div v-if="currentTrack" class="track-info-container">
       <div class="track-info">{{ currentTrack.name }}</div>
       <div class="track-info">
-        <span>{{ currentTrack.genre || 'Unknown genre' }}</span>
-        <span v-show="currentTrack.comment"> - {{ currentTrack.comment }}</span>
+        <span>{{ currentTrack.shortComment }}</span>
       </div>
     </div>
     <div v-if="!currentTrack" class="track-info-container placeholder">

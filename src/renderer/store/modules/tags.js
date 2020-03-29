@@ -64,7 +64,7 @@ const actions = {
   },
 
   applyCurrentTag() {
-    ipcRenderer.send('tags:applyToMetadata', state.currentTag);
+    ipcRenderer.send('tag:applyToMetadata', state.currentTag);
   },
 };
 

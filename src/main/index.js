@@ -150,8 +150,10 @@ const updateTrack = (trackId, trackFields) => {
 };
 
 ipcMain.on('tracks:add', (event, files) => {
+  const oldPaths = store.get('tracks').map(f => f.path);
   const filteredFiles = files
     .filter(f => f.type.includes('audio') && f.type !== 'audio/mpegurl')
+    .filter(t => oldPaths.indexOf(t.path) === -1)
     .map((f) => {
       const newFields = {
         id: autoId(),
@@ -160,6 +162,7 @@ ipcMain.on('tracks:add', (event, files) => {
       };
       return { ...f, ...newFields };
     });
+
   Promise.map(
     filteredFiles,
     t => readMetadata(t.path)

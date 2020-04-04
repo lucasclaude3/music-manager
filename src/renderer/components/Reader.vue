@@ -42,7 +42,13 @@
         color="black"
       ></svgicon>
     </div>
-    <b-progress class="mt-2" :max="100"></b-progress>
+    <div @click="handleClick">
+      <b-progress
+        class="mt-2"
+        :max="100"
+        :value="currentProgress"
+      ></b-progress>
+    </div>
   </div>
 </template>
 
@@ -62,6 +68,8 @@ export default {
   data() {
     return {
       sound: null,
+      isLoaded: false,
+      currentProgress: 0,
     };
   },
   mounted() {
@@ -69,6 +77,13 @@ export default {
       if (mutation.type === 'tracks/LAUNCH_TRACK') {
         this.playTrack(state.tracks.currentTrack);
       }
+    });
+    this.$nextTick(() => {
+      window.setInterval(() => {
+        this.currentProgress = this.isLoaded
+          ? (100.0 * this.sound.seek()) / this.sound.duration()
+          : 0;
+      }, 200);
     });
   },
   computed: {
@@ -83,6 +98,7 @@ export default {
     }),
     playTrack(track) {
       if (this.sound) {
+        this.isLoaded = false;
         this.sound.stop();
         this.sound.unload();
       }
@@ -100,11 +116,17 @@ export default {
           src: [data],
           html5: true,
         });
-        this.sound.play();
+        this.sound.once('load', () => {
+          this.isLoaded = true;
+          this.sound.play();
+        });
       });
     },
 
     playPreviousSong() {
+      if (!this.sound) {
+        return;
+      }
       const i = this.playlist.map(t => t.id).indexOf(this.currentTrack.id);
       if (i > -1) {
         this.launchTrack(this.playlist[Math.max(i - 1, 0)]);
@@ -112,6 +134,9 @@ export default {
     },
 
     playNextSong() {
+      if (!this.sound) {
+        return;
+      }
       const i = this.playlist.map(t => t.id).indexOf(this.currentTrack.id);
       if (i > -1 && i < this.playlist.length - 1) {
         this.launchTrack(this.playlist[i + 1]);
@@ -131,11 +156,22 @@ export default {
         this.sound.play();
       }
     },
+
+    handleClick(event) {
+      if (!this.isLoaded) {
+        return;
+      }
+      const progressBarElement = event.target.firstElementChild.getBoundingClientRect();
+      if (event.x >= progressBarElement.left && event.x <= progressBarElement.right) {
+        const progressRatio = (event.x - progressBarElement.left) / progressBarElement.width;
+        this.sound.seek(this.sound.duration() * progressRatio);
+      }
+    },
   },
 };
 </script>
 
-<style scoped lang="scss">
+<style lang="scss">
   .reader {
     width: 100%;
     height: 130px;
@@ -166,5 +202,10 @@ export default {
   .progress {
     width: 400px;
     margin: 0 auto;
+    pointer-events: none;
+
+    .progress-bar {
+      transition: none;
+    }
   }
 </style>

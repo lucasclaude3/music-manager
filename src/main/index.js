@@ -221,7 +221,7 @@ ipcMain.on('tag:applyToMetadata', (event, currentTag) => {
     tracks,
     (t) => {
       let comments = [];
-      if (t.metadataComment.indexOf('[Custom Tags]') !== 0) {
+      if (!t.metadataComment || t.metadataComment.indexOf('[Custom Tags]') !== 0) {
         comments = [currentTag.name.trim()];
       } else {
         const previousList = t.metadataComment.replace('[Custom Tags]', '').trim();

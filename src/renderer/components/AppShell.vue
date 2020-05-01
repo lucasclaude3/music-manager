@@ -24,9 +24,14 @@ export default {
 </script>
 
 <style lang="scss">
+  .fixed {
+    position: fixed;
+  }
+
   .wrapper {
     display: flex;
     width: 100%;
     align-items: stretch;
+    padding-top: 130px;
   }
 </style>

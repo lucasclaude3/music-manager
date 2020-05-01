@@ -112,6 +112,7 @@ export default {
   @import 'styles/_vars.scss';
 
   .sidebar {
+    position: fixed;
     min-width: 200px;
     max-width: 200px;
     min-height: 100vh;

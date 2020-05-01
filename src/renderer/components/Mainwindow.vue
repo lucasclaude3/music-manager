@@ -1,5 +1,5 @@
 <template>
-  <div class="mainwindow">
+  <div class="main-window">
     <input
       class="tracks-input"
       type="file"
@@ -150,6 +150,9 @@ export default {
 </script>
 
 <style lang="scss">
+  .main-window {
+    padding-left: 200px;
+  }
   .background {
     background-color: gray;
   }

@@ -32,6 +32,6 @@ export default {
     display: flex;
     width: 100%;
     align-items: stretch;
-    padding-top: 130px;
+    padding-top: 140px;
   }
 </style>

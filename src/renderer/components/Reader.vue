@@ -175,7 +175,7 @@ export default {
   .reader {
     position: fixed;
     width: 100%;
-    height: 130px;
+    height: 140px;
     border-bottom: 1px solid black;
     padding-top: 10px;
     background-color: white;

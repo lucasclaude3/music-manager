@@ -1,6 +1,6 @@
 <template>
   <nav class="sidebar">
-    sidebar
+    Tags
     <ul>
       <li
         class="tag"
@@ -113,9 +113,10 @@ export default {
 
   .sidebar {
     position: fixed;
-    min-width: 200px;
-    max-width: 200px;
+    min-width: 250px;
+    max-width: 250px;
     min-height: 100vh;
+    padding: 20px;
     border-right: 1px solid $border-primary;
     background-color: $background-primary;
     color: $text-primary;

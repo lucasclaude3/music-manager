@@ -170,7 +170,7 @@ export default {
 
 <style lang="scss" scoped>
   .main-window {
-    margin-left: 200px;
+    margin-left: 250px;
     padding-left: 20px;
   }
 

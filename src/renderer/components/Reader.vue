@@ -179,6 +179,7 @@ export default {
     border-bottom: 1px solid black;
     padding-top: 10px;
     background-color: white;
+    z-index: 1;
   }
 
   .track-info-container {

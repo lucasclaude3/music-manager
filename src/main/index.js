@@ -1,9 +1,11 @@
-import { app, BrowserWindow, ipcMain } from 'electron' // eslint-disable-line
+import { app, BrowserWindow, ipcMain, Menu, dialog } from 'electron' // eslint-disable-line
 import Store from 'electron-store';
 import { Promise } from 'bluebird';
 import NodeID3 from 'node-id3';
 import BulkSearch from 'bulksearch';
-
+import fs from 'fs';
+import path from 'path';
+import mime from 'mime-type/with-db';
 
 const readMetadata = filepath =>
   new Promise((resolve, reject) => {
@@ -25,8 +27,11 @@ const writeMetadata = (filepath, tags) =>
     });
   });
 
+const readDir = Promise.promisify(fs.readdir);
+const stat = Promise.promisify(fs.stat);
+
 const store = new Store();
-// store.clear();
+store.clear();
 const mainIndex = new BulkSearch();
 const tracks = store.get('tracks') || [];
 tracks.forEach((t) => {
@@ -42,6 +47,25 @@ const autoId = (() => {
     return seed;
   };
 })();
+
+const analyzeDirectory = async (dir) => {
+  const subdirs = await readDir(dir);
+  const files = await Promise.map(
+    subdirs,
+    async (subdir) => {
+      const res = path.resolve(dir, subdir);
+      return (await stat(res)).isDirectory() ? analyzeDirectory(res) : res;
+    },
+  );
+  return files.reduce((a, f) => a.concat(f), []);
+};
+
+const analyzePaths = dirs => Promise
+  .map(
+    dirs,
+    dir => analyzeDirectory(dir),
+    { concurrency: 5 },
+  );
 
 /**
  * Set `__static` path to static files in production
@@ -75,6 +99,65 @@ function createWindow() {
     mainWindow = null;
   });
 }
+
+const parseComment = comment => comment.replace('[Custom Tags]', '').trim();
+
+const updateTrack = (trackId, trackFields) => {
+  const tracks = store.get('tracks').filter(t => t.id !== trackId);
+  let modifiedTrack = store.get('tracks').find(t => t.id === trackId);
+  modifiedTrack = { ...modifiedTrack, ...trackFields };
+  tracks.push(modifiedTrack);
+  store.set({ tracks });
+  return modifiedTrack;
+};
+
+const addTracks = (filepaths) => {
+  const oldPaths = store.get('tracks').map(f => f.path);
+  const filteredFiles = filepaths
+    .filter((filepath) => {
+      const mimeType = mime.lookup(filepath);
+      return mimeType && mimeType.includes('audio') && mimeType !== 'audio/mpegurl';
+    })
+    .filter(filepath => oldPaths.indexOf(filepath) === -1)
+    .map(filepath => ({
+      path: filepath,
+      name: path.basename(filepath),
+      type: mime.lookup(filepath),
+      id: autoId(),
+      created_at: Date.now(),
+      tagBag: [],
+    }));
+
+  Promise.map(
+    filteredFiles,
+    t => readMetadata(t.path)
+      .then((data) => {
+        if (!data) {
+          return Promise.reject(new Error('No metadata found'));
+        }
+        const modifiedTrack = updateTrack(t.id, {
+          genre: data.genre,
+          shortComment: data.comment && parseComment(data.comment.text),
+          metadataComment: data.comment && data.comment.text,
+        });
+        mainWindow.webContents.send('track:updated', modifiedTrack);
+        return Promise.resolve();
+      })
+      .catch((err) => {
+        console.log(err);
+      }),
+    { concurrency: 5 },
+  );
+  const tracks = store.get('tracks').concat(filteredFiles);
+  store.set({ tracks });
+
+  tracks.forEach((t) => {
+    mainIndex.add(t.id, t.name);
+  });
+  store.set({ mainIndex });
+
+  mainWindow.webContents.send('tracks:added', filteredFiles);
+};
 
 app.on('ready', createWindow);
 
@@ -140,60 +223,6 @@ ipcMain.on('tags:load', () => {
   mainWindow.webContents.send('tags:loaded', store.get('tags') || []);
 });
 
-const updateTrack = (trackId, trackFields) => {
-  const tracks = store.get('tracks').filter(t => t.id !== trackId);
-  let modifiedTrack = store.get('tracks').find(t => t.id === trackId);
-  modifiedTrack = { ...modifiedTrack, ...trackFields };
-  tracks.push(modifiedTrack);
-  store.set({ tracks });
-  return modifiedTrack;
-};
-
-ipcMain.on('tracks:add', (event, files) => {
-  const oldPaths = store.get('tracks').map(f => f.path);
-  const filteredFiles = files
-    .filter(f => f.type.includes('audio') && f.type !== 'audio/mpegurl')
-    .filter(t => oldPaths.indexOf(t.path) === -1)
-    .map((f) => {
-      const newFields = {
-        id: autoId(),
-        created_at: Date.now(),
-        tagBag: [],
-      };
-      return { ...f, ...newFields };
-    });
-
-  Promise.map(
-    filteredFiles,
-    t => readMetadata(t.path)
-      .then((data) => {
-        if (!data) {
-          return Promise.reject(new Error('No metadata found'));
-        }
-        const modifiedTrack = updateTrack(t.id, {
-          genre: data.genre,
-          shortComment: data.comment && data.comment.text,
-          metadataComment: data.comment && data.comment.text,
-        });
-        mainWindow.webContents.send('track:updated', modifiedTrack);
-        return Promise.resolve();
-      })
-      .catch((err) => {
-        console.log(err);
-      }),
-    { concurrency: 5 },
-  );
-  const tracks = store.get('tracks').concat(filteredFiles);
-  store.set({ tracks });
-
-  tracks.forEach((t) => {
-    mainIndex.add(t.id, t.name);
-  });
-  store.set({ mainIndex });
-
-  mainWindow.webContents.send('tracks:added', filteredFiles);
-});
-
 ipcMain.on('tracks:load', (event, tagId) => {
   let tracks = store.get('tracks') || [];
   if (tagId) {
@@ -224,7 +253,7 @@ ipcMain.on('tag:applyToMetadata', (event, currentTag) => {
       if (!t.metadataComment || t.metadataComment.indexOf('[Custom Tags]') !== 0) {
         comments = [currentTag.name.trim()];
       } else {
-        const previousList = t.metadataComment.replace('[Custom Tags]', '').trim();
+        const previousList = parseComment(t.metadataComment);
         comments = previousList.split(' - ').map(c => c.trim());
         if (comments.indexOf(currentTag.name.trim()) === -1) {
           comments.push(currentTag.name.trim());
@@ -255,3 +284,45 @@ ipcMain.on('track:search', (event, { searchTerms, tag }) => {
   }
   mainWindow.webContents.send('tracks:loaded', tracks);
 });
+
+const menuTemplate = [
+  {
+    label: '',
+  },
+  {
+    label: 'File',
+    submenu: [
+      {
+        label: 'Import',
+        submenu: [
+          {
+            label: 'Import Track',
+            click() {
+              dialog.showOpenDialog(mainWindow, { properties: ['openFile', 'multiSelections'] })
+                .then(result => addTracks(result.filePaths));
+            },
+          },
+          {
+            label: 'Import Folder',
+            accelerator: 'Command+O',
+            click() {
+              dialog.showOpenDialog(mainWindow, { properties: ['openDirectory', 'multiSelections'] })
+                .then(result => analyzePaths(result.filePaths))
+                .then(filepathsArrays => addTracks(Array.concat.apply([], filepathsArrays)));
+            },
+          },
+        ],
+      },
+      {
+        label: 'Quit',
+        accelerator: 'Command+Q',
+        click() {
+          app.quit();
+        },
+      },
+    ],
+  },
+];
+
+const mainMenu = Menu.buildFromTemplate(menuTemplate);
+Menu.setApplicationMenu(mainMenu);

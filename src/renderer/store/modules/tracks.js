@@ -44,19 +44,18 @@ const actions = {
     });
   },
 
-  addTracks({ commit }, tracks) {
-    ipcRenderer.send('tracks:add', tracks);
-    ipcRenderer.on('tracks:added', (event, tracks) => {
-      commit({ type: 'ADD_TRACKS', tracks });
-      ipcRenderer.removeAllListeners('tracks:added');
-    });
-  },
-
   addTagToTracks({ commit }, { tagId, trackIds }) {
     ipcRenderer.send('tracks:addTag', { tagId, trackIds });
     ipcRenderer.on('track:tagAdded', (event, track) => {
       commit({ type: 'UPDATE_TRACK', track });
       ipcRenderer.removeAllListeners('track:tagAdded');
+    });
+  },
+
+  watchTrackAddition({ commit }) {
+    ipcRenderer.on('tracks:added', (event, tracks) => {
+      commit({ type: 'ADD_TRACKS', tracks });
+      ipcRenderer.removeAllListeners('tracks:added');
     });
   },
 

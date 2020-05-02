@@ -1,20 +1,10 @@
 <template>
   <div class="main-window">
-    <input
-      class="tracks-input"
-      type="file"
-      webkitdirectory
-      @change="addNewFiles">
-    <input
-      class="tracks-input"
-      type="file"
-      multiple
-      @change="addNewFiles">
     <b-button
       v-if="currentTag !== null"
       @click="applyCurrentTag()"
     >Apply current Tag {{ currentTag.name }}</b-button>
-    <div>
+    <div class="searchbar">
       <label for="search"></label>
       <b-form-input
         id="search"
@@ -39,7 +29,7 @@
           </th>
         </tr>
       </thead>
-      <tbody>
+      <tbody class="table-scroll">
         <tr
           class="track"
           v-for="track in orderedTracks"
@@ -91,6 +81,7 @@ export default {
   },
   mounted() {
     this.loadTracks();
+    this.watchTrackAddition();
     this.watchTrackModification();
   },
   computed: {
@@ -119,23 +110,13 @@ export default {
   },
   methods: {
     ...mapActions({
-      addTracks: 'tracks/addTracks',
       loadTracks: 'tracks/loadTracks',
+      watchTrackAddition: 'tracks/watchTrackAddition',
       watchTrackModification: 'tracks/watchTrackModification',
       applyCurrentTag: 'tags/applyCurrentTag',
       launchTrack: 'tracks/launchTrack',
       searchTrack: 'tracks/searchTrack',
     }),
-    addNewFiles(event) {
-      const newFiles = Array
-        .from(event.target.files)
-        .map(file => ({
-          path: file.path,
-          name: file.name,
-          type: file.type,
-        }));
-      this.addTracks(newFiles);
-    },
     handleDragTrack(event) {
       if (this.firstSelectedElement === null
         || event.target.id < parseInt(this.firstSelectedElement.id, 10)
@@ -189,11 +170,30 @@ export default {
 
 <style lang="scss" scoped>
   .main-window {
-    padding-left: 200px;
+    margin-left: 200px;
+    padding-left: 20px;
   }
 
   .background {
     background-color: gray;
+  }
+
+  .searchbar {
+    position: fixed;
+    z-index: 1;
+  }
+
+  table {
+    margin-top: 100px;
+    position: relative;
+
+    thead, tbody {
+      display: block;
+    }
+    tbody {
+      max-height: 300px;
+      overflow-y: scroll;
+    }
   }
 
   tr {

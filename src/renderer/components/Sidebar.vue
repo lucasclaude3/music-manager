@@ -119,6 +119,7 @@ export default {
     border-right: 1px solid $border-primary;
     background-color: $background-primary;
     color: $text-primary;
+    z-index: 1;
   }
 
   .dragover {

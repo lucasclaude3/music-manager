@@ -31,7 +31,7 @@ const readDir = Promise.promisify(fs.readdir);
 const stat = Promise.promisify(fs.stat);
 
 const store = new Store();
-store.clear();
+// store.clear();
 const mainIndex = new BulkSearch();
 const tracks = store.get('tracks') || [];
 tracks.forEach((t) => {

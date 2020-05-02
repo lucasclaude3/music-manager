@@ -12,6 +12,7 @@
 - [x] Fix apply tag to list
 - [x] Add track columns
 - [x] Implement track progression in reader
+- [x] Move import to folder
 - [ ] Work on design (!!) https://www.flaticon.com/packs/solid-media-elements
 - [ ] Load tags from another pc
 - [ ] Reset tags that are not used anymore

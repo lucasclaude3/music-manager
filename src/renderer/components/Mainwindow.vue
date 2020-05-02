@@ -24,28 +24,47 @@
         @keydown="event => onNewChar(event, searchTerms)"
       ></b-form-input>
     </div>
-    <ul>
-      <li
-        class="track"
-        v-for="track in orderedTracks"
-        v-bind:key="track.id"
-        v-bind:id="track.index"
-        tabindex="0"
-        draggable="true"
-        @dragstart="handleDragTrack"
-        @dblclick="() => launchTrack(track)"
-        @click.exact="handleFocus"
-        @click.shift="handleFocusShift"
-        @blur="handleBlur"
-        v-bind:class="{ background: firstSelectedElement
-                                 && track.index >= firstSelectedElement.id
-                                 && track.index <= secondSelectedElement.id }"
-      >
-        <span class="no-pointer-events" v-html="track.name"></span>
-        <span class="no-pointer-events" v-html="track.genre"></span>
-        <span class="no-pointer-events" v-html="track.shortComment"></span>
-      </li>
-    </ul>
+    <table>
+      <thead>
+        <tr>
+          <th
+            v-for="key in columns"
+            v-bind:key="key"
+            @click="sortBy(key)"
+            :class="{ active: sortKey == key }"
+          >
+            {{ key | capitalize }}
+            <span class="arrow" :class="sortOrders[key] > 0 ? 'asc' : 'dsc'">
+            </span>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          class="track"
+          v-for="track in orderedTracks"
+          v-bind:key="track.id"
+          v-bind:id="track.index"
+          tabindex="0"
+          draggable="true"
+          @dragstart="handleDragTrack"
+          @dblclick="() => launchTrack(track)"
+          @click.exact="handleFocus"
+          @click.shift="handleFocusShift"
+          @blur="handleBlur"
+          v-bind:class="{ background: firstSelectedElement
+                                  && track.index >= parseInt(firstSelectedElement.id, 10)
+                                  && track.index <= parseInt(secondSelectedElement.id, 10) }"
+        >
+          <td class="no-pointer-events"
+            v-for="key in columns"
+            v-bind:key="key"
+          >
+            <span>{{track[key]}}</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </template>
 
@@ -55,10 +74,19 @@ import { mapState, mapActions } from 'vuex';
 export default {
   name: 'MainWindow',
   data() {
+    const columns = ['name', 'genre', 'shortComment'];
+    const sortOrders = {};
+    columns.forEach((key) => {
+      sortOrders[key] = 1;
+    });
+
     return {
       searchTerms: '',
       firstSelectedElement: null,
       secondSelectedElement: null,
+      columns,
+      sortOrders,
+      sortKey: '',
     };
   },
   mounted() {
@@ -69,19 +97,25 @@ export default {
     ...mapState('tracks', ['tracks']),
     ...mapState('tags', ['currentTag']),
     orderedTracks() {
-      const tmpTracks = [...this.tracks].sort((a, b) => {
-        if (a.created_at < b.created_at) {
-          return 1;
-        } else if (a.created_at === b.created_at && a.id < b.id) {
-          return 1;
-        }
-        return -1;
-      });
+      const { sortKey, sortOrders } = this;
+      const order = sortOrders[sortKey] || 1;
+      const tmpTracks = [...this.tracks]
+        .sort((a, b) => {
+          const aSortKey = a[sortKey] || '';
+          const bSortKey = b[sortKey] || '';
+          if (aSortKey < bSortKey || (aSortKey === bSortKey && a.id < b.id)) {
+            return order;
+          }
+          return -order;
+        });
       tmpTracks.forEach((t, index) => {
         t.index = index;
       });
       return tmpTracks;
     },
+  },
+  filters: {
+    capitalize: str => str.charAt(0).toUpperCase() + str.slice(1),
   },
   methods: {
     ...mapActions({
@@ -104,13 +138,13 @@ export default {
     },
     handleDragTrack(event) {
       if (this.firstSelectedElement === null
-        || event.target.id < this.firstSelectedElement.id
-        || event.target.id > this.secondSelectedElement.id) {
+        || event.target.id < parseInt(this.firstSelectedElement.id, 10)
+        || event.target.id > parseInt(this.secondSelectedElement.id, 10)) {
         this.handleFocus(event);
       }
       const selectedTracks = this.orderedTracks
-        .filter(t => t.index >= this.firstSelectedElement.id
-                  && t.index <= this.secondSelectedElement.id)
+        .filter(t => t.index >= parseInt(this.firstSelectedElement.id, 10)
+                  && t.index <= parseInt(this.secondSelectedElement.id, 10))
         .map(t => t.id);
       event
         .dataTransfer
@@ -133,7 +167,7 @@ export default {
       this.secondSelectedElement = event.target;
     },
     handleFocusShift(event) {
-      if (event.target.id < this.firstSelectedElement.id) {
+      if (parseInt(event.target.id, 10) < parseInt(this.firstSelectedElement.id, 10)) {
         this.firstSelectedElement = event.target;
         return;
       }
@@ -145,15 +179,65 @@ export default {
         this.secondSelectedElement = null;
       }
     },
+    sortBy(key) {
+      this.sortKey = key;
+      this.sortOrders[key] *= -1;
+    },
   },
 };
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
   .main-window {
     padding-left: 200px;
   }
+
   .background {
     background-color: gray;
+  }
+
+  tr {
+    display: block;
+    color: #000;
+  }
+
+  td, th {
+    max-width: 300px;
+    min-width: 300px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  th {
+    opacity: 0.66;
+  }
+
+  th.active {
+    opacity: 1;
+    .arrow {
+      opacity: 1;
+    }
+  }
+
+  .arrow {
+    display: inline-block;
+    vertical-align: middle;
+    width: 0;
+    height: 0;
+    margin-left: 5px;
+    opacity: 0.66;
+  }
+
+  .arrow.asc {
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-bottom: 4px solid #000;
+  }
+
+  .arrow.dsc {
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 4px solid #000;
   }
 </style>

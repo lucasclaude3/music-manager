@@ -8,6 +8,9 @@
 - [x] Implement quick search in tracks - https://github.com/nextapps-de/flexsearch
 - [x] Remove tags and tracks duplicates
 - [ ] Update comments when modifiying a tag name
+- [x] Improve scroll -> per element
+- [x] Fix apply tag to list
+- [ ] Add track columns
 - [x] Implement track progression in reader
 - [ ] Work on design (!!) https://www.flaticon.com/packs/solid-media-elements
 - [ ] Load tags from another pc

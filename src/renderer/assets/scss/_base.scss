@@ -32,6 +32,16 @@
 }
 
 // Common CSS
+@import url('https://fonts.googleapis.com/css?family=Jost');
+
+html, body {
+    font-family: 'Jost', sans-serif;
+}
+
+#app {
+    font-family: 'Jost', sans-serif;
+}
+
 .hidden {
     display: none;
 }

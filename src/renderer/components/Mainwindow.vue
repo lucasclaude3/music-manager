@@ -18,13 +18,14 @@
       <thead>
         <tr>
           <th
-            v-for="key in columns"
+            v-for="key in Object.keys(columns)"
             v-bind:key="key"
             @click="sortBy(key)"
             :class="{ active: sortKey == key }"
+            :style="{ 'max-width': `${columns[key].size}px`, 'min-width': `${columns[key].size}px`}"
           >
             {{ key | capitalize }}
-            <span class="arrow" :class="sortOrders[key] > 0 ? 'asc' : 'dsc'">
+            <span class="arrow" :class="columns[key].sortOrder > 0 ? 'asc' : 'dsc'">
             </span>
           </th>
         </tr>
@@ -42,13 +43,14 @@
           @click.exact="handleFocus"
           @click.shift="handleFocusShift"
           @blur="handleBlur"
-          v-bind:class="{ background: firstSelectedElement
+          v-bind:class="{ selected: firstSelectedElement
                                   && track.index >= parseInt(firstSelectedElement.id, 10)
                                   && track.index <= parseInt(secondSelectedElement.id, 10) }"
         >
           <td class="no-pointer-events"
-            v-for="key in columns"
+            v-for="key in Object.keys(columns)"
             v-bind:key="key"
+            :style="{ 'max-width': `${columns[key].size}px`, 'min-width': `${columns[key].size}px`}"
           >
             <span>{{track[key]}}</span>
           </td>
@@ -64,18 +66,17 @@ import { mapState, mapActions } from 'vuex';
 export default {
   name: 'MainWindow',
   data() {
-    const columns = ['name', 'genre', 'shortComment'];
-    const sortOrders = {};
-    columns.forEach((key) => {
-      sortOrders[key] = 1;
-    });
+    const columns = {
+      name: { size: 450, sortOrder: 1 },
+      genre: { size: 150, sortOrder: 1 },
+      shortComment: { size: 200, sortOrder: 1 },
+    };
 
     return {
       searchTerms: '',
       firstSelectedElement: null,
       secondSelectedElement: null,
       columns,
-      sortOrders,
       sortKey: '',
     };
   },
@@ -88,8 +89,8 @@ export default {
     ...mapState('tracks', ['tracks']),
     ...mapState('tags', ['currentTag']),
     orderedTracks() {
-      const { sortKey, sortOrders } = this;
-      const order = sortOrders[sortKey] || 1;
+      const { sortKey } = this;
+      const order = (this.columns[sortKey] && this.columns[sortKey].sortOrder) || 1;
       const tmpTracks = [...this.tracks]
         .sort((a, b) => {
           const aSortKey = a[sortKey] || '';
@@ -162,7 +163,7 @@ export default {
     },
     sortBy(key) {
       this.sortKey = key;
-      this.sortOrders[key] *= -1;
+      this.columns[key].sortOrder *= -1;
     },
   },
 };
@@ -172,10 +173,6 @@ export default {
   .main-window {
     margin-left: 250px;
     padding-left: 20px;
-  }
-
-  .background {
-    background-color: gray;
   }
 
   .searchbar {
@@ -196,14 +193,26 @@ export default {
     }
   }
 
-  tr {
+  thead tr {
+    background-color: rgba(95, 158, 160, 0.2);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.66);
+  }
+
+  tbody tr {
     display: block;
     color: #000;
+    &:nth-child(even) {
+      background-color: rgba(95, 158, 160, 0.2);
+    }
+    &:nth-child(odd) {
+      background-color: white;
+    }
+    &.selected {
+      background-color: rgba(95, 158, 160, 0.66);
+    }
   }
 
   td, th {
-    max-width: 300px;
-    min-width: 300px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;

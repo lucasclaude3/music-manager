@@ -88,9 +88,11 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: true,
     },
-    height: 563,
+    width: 1100,
+    minWidth: 1100,
+    height: 600,
+    minHeight: 600,
     useContentSize: true,
-    width: 1000,
   });
 
   mainWindow.loadURL(winURL);

@@ -30,7 +30,10 @@
           </th>
         </tr>
       </thead>
-      <tbody class="table-scroll">
+      <tbody
+        class="table-scroll"
+        :style="{ 'max-height': `${winHeight - 226}px` }"
+      >
         <tr
           class="track"
           v-for="track in orderedTracks"
@@ -43,13 +46,14 @@
           @click.exact="handleFocus"
           @click.shift="handleFocusShift"
           @blur="handleBlur"
-          v-bind:class="{ selected: firstSelectedElement
-                                  && track.index >= parseInt(firstSelectedElement.id, 10)
-                                  && track.index <= parseInt(secondSelectedElement.id, 10) }"
+          :class="{ selected: firstSelectedElement
+                           && track.index >= parseInt(firstSelectedElement.id, 10)
+                           && track.index <= parseInt(secondSelectedElement.id, 10) }"
         >
-          <td class="no-pointer-events"
+          <td
             v-for="key in Object.keys(columns)"
             v-bind:key="key"
+            class="no-pointer-events"
             :style="{ 'max-width': `${columns[key].size}px`, 'min-width': `${columns[key].size}px`}"
           >
             <span>{{track[key]}}</span>
@@ -69,7 +73,7 @@ export default {
     const columns = {
       name: { size: 450, sortOrder: 1 },
       genre: { size: 150, sortOrder: 1 },
-      shortComment: { size: 200, sortOrder: 1 },
+      comment: { size: window.innerWidth - 850, sortOrder: 1 },
     };
 
     return {
@@ -78,12 +82,18 @@ export default {
       secondSelectedElement: null,
       columns,
       sortKey: '',
+      winHeight: window.innerHeight,
+      winWidth: window.innerWidth,
     };
   },
   mounted() {
     this.loadTracks();
     this.watchTrackAddition();
     this.watchTrackModification();
+    window.addEventListener('resize', () => {
+      this.winHeight = window.innerHeight;
+      this.winWidth = window.innerWidth;
+    });
   },
   computed: {
     ...mapState('tracks', ['tracks']),
@@ -147,6 +157,7 @@ export default {
     handleFocus(event) {
       this.firstSelectedElement = event.target;
       this.secondSelectedElement = event.target;
+      console.log(this.firstSelectedElement);
     },
     handleFocusShift(event) {
       if (parseInt(event.target.id, 10) < parseInt(this.firstSelectedElement.id, 10)) {
@@ -172,23 +183,27 @@ export default {
 <style lang="scss" scoped>
   .main-window {
     margin-left: 250px;
-    padding-left: 20px;
   }
 
   .searchbar {
     position: fixed;
+    padding-left: 20px;
     z-index: 1;
   }
 
+  input.form-control {
+    margin-top: -8px;
+    height: 30px;
+  }
+
   table {
-    margin-top: 100px;
+    margin-top: 60px;
     position: relative;
 
     thead, tbody {
       display: block;
     }
     tbody {
-      max-height: 300px;
       overflow-y: scroll;
     }
   }
@@ -209,6 +224,15 @@ export default {
     }
     &.selected {
       background-color: rgba(95, 158, 160, 0.66);
+    }
+  }
+
+  tr {
+    td, th {
+      padding-left: 5px;
+    }
+    td:last-of-type {
+      padding-right: 5px;
     }
   }
 

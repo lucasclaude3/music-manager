@@ -19,7 +19,7 @@
         dir="down"
       ></svgicon>
       <svgicon
-        v-bind:class="{ hidden: isPlaying }"
+        :class="{ hidden: isPlaying }"
         @click="play()"
         icon="play"
         width="33"
@@ -27,7 +27,7 @@
         color="black"
       ></svgicon>
       <svgicon
-        v-bind:class="{ hidden: !isPlaying }"
+        :class="{ hidden: !isPlaying }"
         @click="pause()"
         icon="pause"
         width="33"

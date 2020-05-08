@@ -13,3 +13,14 @@ export default {
   },
 };
 </script>
+
+<style scoped lang="scss">
+  @import 'styles/_vars.scss';
+
+  #app {
+    height: 100vh;
+    font-size: 14px;
+    color: rgba($white, 0.8);
+    background: linear-gradient($grey, $black);
+  }
+</style>

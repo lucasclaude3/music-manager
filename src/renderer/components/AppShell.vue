@@ -1,8 +1,8 @@
 <template>
   <main>
-    <Reader />
+    <Sidebar />
     <div class="wrapper">
-      <Sidebar />
+      <Reader />
       <MainWindow />
     </div>
   </main>
@@ -23,15 +23,12 @@ export default {
 };
 </script>
 
-<style lang="scss">
-  .fixed {
-    position: fixed;
-  }
-
+<style scoped lang="scss">
   .wrapper {
     display: flex;
+    flex-direction: column;
     width: 100%;
     align-items: stretch;
-    padding-top: 140px;
+    padding-left: 250px;
   }
 </style>

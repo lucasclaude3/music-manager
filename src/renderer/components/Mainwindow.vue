@@ -1,9 +1,5 @@
 <template>
   <div class="main-window">
-    <b-button
-      v-if="currentTag !== null"
-      @click="applyCurrentTag()"
-    >Apply current Tag {{ currentTag.name }}</b-button>
     <div class="searchbar">
       <label for="search"></label>
       <b-form-input
@@ -24,7 +20,7 @@
             :class="{ active: sortKey == key }"
             :style="{ 'max-width': `${columns[key].size}px`, 'min-width': `${columns[key].size}px`}"
           >
-            {{ key | capitalize }}
+            {{ columns[key].trad | capitalize }}
             <span class="arrow" :class="columns[key].sortOrder > 0 ? 'asc' : 'dsc'">
             </span>
           </th>
@@ -71,9 +67,9 @@ export default {
   name: 'MainWindow',
   data() {
     const columns = {
-      name: { size: 450, sortOrder: 1 },
-      genre: { size: 150, sortOrder: 1 },
-      comment: { size: window.innerWidth - 850, sortOrder: 1 },
+      name: { size: 450, sortOrder: 1, trad: 'name' },
+      genre: { size: 150, sortOrder: 1, trad: 'genre' },
+      shortComment: { size: window.innerWidth, sortOrder: 1, trad: 'comment' },
     };
 
     return {
@@ -91,6 +87,8 @@ export default {
     this.watchTrackAddition();
     this.watchTrackModification();
     window.addEventListener('resize', () => {
+      console.log(this.tracks);
+
       this.winHeight = window.innerHeight;
       this.winWidth = window.innerWidth;
     });
@@ -124,7 +122,6 @@ export default {
       loadTracks: 'tracks/loadTracks',
       watchTrackAddition: 'tracks/watchTrackAddition',
       watchTrackModification: 'tracks/watchTrackModification',
-      applyCurrentTag: 'tags/applyCurrentTag',
       launchTrack: 'tracks/launchTrack',
       searchTrack: 'tracks/searchTrack',
     }),
@@ -157,7 +154,6 @@ export default {
     handleFocus(event) {
       this.firstSelectedElement = event.target;
       this.secondSelectedElement = event.target;
-      console.log(this.firstSelectedElement);
     },
     handleFocusShift(event) {
       if (parseInt(event.target.id, 10) < parseInt(this.firstSelectedElement.id, 10)) {
@@ -180,9 +176,13 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
+<style scoped lang="scss">
+  @import 'styles/_vars.scss';
+
   .main-window {
-    margin-left: 250px;
+    margin-top: 130px;
+    overflow: hidden;
+    line-height: 2;
   }
 
   .searchbar {
@@ -191,12 +191,25 @@ export default {
     z-index: 1;
   }
 
+  #search {
+    background-color: $moreBlack;
+    color: $mainColor;
+    border-color: #6c757d;
+    &:hover {
+      border-color: #545B62;
+    }
+  }
+
   input.form-control {
     margin-top: -8px;
     height: 30px;
+    &:focus {
+      box-shadow: 0 0 0 0.1rem rgba($mainColor, 0.2);
+    }
   }
 
   table {
+    width: 100%;
     margin-top: 60px;
     position: relative;
 
@@ -209,30 +222,24 @@ export default {
   }
 
   thead tr {
-    background-color: rgba(95, 158, 160, 0.2);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.66);
+    background-color: $grey;
   }
 
   tbody tr {
     display: block;
-    color: #000;
-    &:nth-child(even) {
-      background-color: rgba(95, 158, 160, 0.2);
-    }
-    &:nth-child(odd) {
-      background-color: white;
-    }
+    color: rgba($white, 0.8);
+    border-top: 1px solid $moreBlack;
     &.selected {
-      background-color: rgba(95, 158, 160, 0.66);
+      background-color: rgba($mainColor, 0.5);
     }
   }
 
   tr {
     td, th {
-      padding-left: 5px;
+      padding-left: 20px;
     }
     td:last-of-type {
-      padding-right: 5px;
+      padding-right: 20px;
     }
   }
 
@@ -265,12 +272,12 @@ export default {
   .arrow.asc {
     border-left: 4px solid transparent;
     border-right: 4px solid transparent;
-    border-bottom: 4px solid #000;
+    border-bottom: 4px solid $white;
   }
 
   .arrow.dsc {
     border-left: 4px solid transparent;
     border-right: 4px solid transparent;
-    border-top: 4px solid #000;
+    border-top: 4px solid $white;
   }
 </style>

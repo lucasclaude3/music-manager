@@ -4,12 +4,14 @@
     <ul>
       <li
         class="tag"
-        @click="event => onClickAllTracks(event, false)">
+        @click="event => onClickAllTracks(event, false)"
+        :class="{ selected: !currentTag && !withoutTags }">
         All tracks
       </li>
       <li
         class="tag"
-        @click="event => onClickAllTracks(event, true)">
+        @click="event => onClickAllTracks(event, true)"
+        :class="{ selected: !currentTag && withoutTags }">
         Tracks without Tags
       </li>
       <li
@@ -24,10 +26,15 @@
         @drop="handleDropTrack"
         @click="event => onClick(event, tag)"
         @dblclick="onDblClick"
-        @blur="onBlur">
+        @blur="onBlur"
+        :class="{ selected: currentTag && currentTag.id === tag.id }">
       </li>
     </ul>
-    <b-button @click="createTag()" type="button">&#43; Add tag</b-button>
+    <b-button
+      v-if="currentTag !== null"
+      @click="applyCurrentTag()"
+    >Apply current Tag</b-button>
+    <b-button @click="createTag()" type="button">&#43; Add Tag</b-button>
   </nav>
 </template>
 
@@ -36,11 +43,16 @@ import { mapState, mapActions } from 'vuex';
 
 export default {
   name: 'Sidebar',
+  data() {
+    return {
+      withoutTags: false,
+    };
+  },
   mounted() {
     this.loadTags();
   },
   computed: {
-    ...mapState('tags', ['tags']),
+    ...mapState('tags', ['tags', 'currentTag']),
     orderedTags() {
       return [...this.tags].sort((a, b) => (a.order < b.order ? -1 : 1));
     },
@@ -52,6 +64,7 @@ export default {
       updateTag: 'tags/updateTag',
       setCurrentTag: 'tags/setCurrentTag',
       deleteTag: 'tags/deleteTag',
+      applyCurrentTag: 'tags/applyCurrentTag',
       addTagToTracks: 'tracks/addTagToTracks',
       loadTracks: 'tracks/loadTracks',
       loadAllTracks: 'tracks/loadAllTracks',
@@ -96,6 +109,7 @@ export default {
     onClickAllTracks(event, withoutTags) {
       this.loadAllTracks(withoutTags);
       this.setCurrentTag(null);
+      this.withoutTags = withoutTags;
     },
     onDblClick(event) {
       event.target.contentEditable = true;
@@ -108,7 +122,7 @@ export default {
 
 </script>
 
-<style scoped lang="scss">
+<style lang="scss">
   @import 'styles/_vars.scss';
 
   .sidebar {
@@ -117,13 +131,25 @@ export default {
     max-width: 250px;
     min-height: 100vh;
     padding: 20px;
-    border-right: 1px solid $border-primary;
-    background-color: $background-primary;
-    color: $text-primary;
+    background-color: $black;
+    color: rgba($white, 0.8);
+    line-height: 1.5;
     z-index: 1;
+  }
+
+  .selected {
+    color: $mainColor;
   }
 
   .dragover {
     font-weight: 700;
+  }
+
+  button.btn.btn-secondary {
+    margin-bottom: 6px;
+    color: $mainColor;
+    background-color: $moreBlack;
+    font-size: 16px;
+    line-height: 16px;
   }
 </style>

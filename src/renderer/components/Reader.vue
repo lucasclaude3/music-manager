@@ -1,53 +1,51 @@
 <template>
-  <div class="reader">
-    <div v-if="currentTrack" class="track-info-container">
-      <div class="track-info">{{ currentTrack.name }}</div>
-      <div class="track-info">
-        <span>{{ currentTrack.shortComment }}</span>
+  <div class="reader-wrapper">
+    <div class="reader">
+      <div v-if="currentTrack" class="track-info-container">
+        <div class="track-info">{{ currentTrack.name }}</div>
+        <div class="track-info">
+          <span>{{ currentTrack.shortComment }}</span>
+        </div>
       </div>
-    </div>
-    <div v-if="!currentTrack" class="track-info-container placeholder">
-      POUET
-    </div>
-    <div class="svgs-container">
-      <svgicon
-        @click="playPreviousSong()"
-        icon="fast-forward"
-        width="22"
-        height="18"
-        color="black"
-        dir="down"
-      ></svgicon>
-      <svgicon
-        :class="{ hidden: isPlaying }"
-        @click="play()"
-        icon="play"
-        width="33"
-        height="27"
-        color="black"
-      ></svgicon>
-      <svgicon
-        :class="{ hidden: !isPlaying }"
-        @click="pause()"
-        icon="pause"
-        width="33"
-        height="27"
-        color="black"
-      ></svgicon>
-      <svgicon
-        @click="playNextSong()"
-        icon="fast-forward"
-        width="22"
-        height="18"
-        color="black"
-      ></svgicon>
-    </div>
-    <div @click="handleClick">
-      <b-progress
-        class="mt-2"
-        :max="100"
-        :value="currentProgress"
-      ></b-progress>
+      <div v-if="!currentTrack" class="track-info-container placeholder"></div>
+      <div class="svgs-container">
+        <svgicon
+          @click="playPreviousSong()"
+          icon="fast-forward"
+          width="22"
+          height="18"
+          dir="down"
+        ></svgicon>
+        <svgicon
+          :class="{ hidden: isPlaying }"
+          @click="play()"
+          icon="play"
+          width="33"
+          height="27"
+          id="play"
+        ></svgicon>
+        <svgicon
+          :class="{ hidden: !isPlaying }"
+          @click="pause()"
+          icon="pause"
+          width="33"
+          height="27"
+          id="pause"
+        ></svgicon>
+        <svgicon
+          @click="playNextSong()"
+          icon="fast-forward"
+          width="22"
+          height="18"
+        ></svgicon>
+      </div>
+      <div @click="handleClick">
+        <b-progress
+          class="mt-2"
+          :max="100"
+          :value="currentProgress"
+        ></b-progress>
+      </div>
     </div>
   </div>
 </template>
@@ -172,19 +170,28 @@ export default {
 </script>
 
 <style lang="scss">
-  .reader {
+  @import 'styles/_vars.scss';
+
+  .reader-wrapper {
     position: fixed;
-    width: 100%;
-    height: 140px;
-    border-bottom: 1px solid black;
+    width: calc(100% - 250px);
+    height: 130px;
+    border-bottom: 1px solid $black;
     padding-top: 10px;
-    background-color: white;
     z-index: 1;
+  }
+
+  .reader {
+    margin: auto;
+    width: 600px;
+    padding: 10px 0;
+    background-color: $black;
+    border-radius: 3px;
   }
 
   .track-info-container {
     width: 300px;
-    height: 60px;
+    height: 50px;
     margin: 0 auto;
     text-align: center;
   }
@@ -200,15 +207,19 @@ export default {
     width: 100px;
     margin: 0 auto;
     text-align: center;
+    color: $moreBlack;
   }
 
   .progress {
     width: 400px;
+    height: 5px;
     margin: 0 auto;
     pointer-events: none;
+    background-color: rgba($mainColor, 0.4);
 
     .progress-bar {
       transition: none;
+      background-color: rgba($mainColor, 1);
     }
   }
 </style>

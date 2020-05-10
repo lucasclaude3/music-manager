@@ -9,7 +9,7 @@
 - [x] Remove tags and tracks duplicates
 - [ ] Update comments when modifiying a tag name
 - [ ] Remove a tag from Tagbags when it's deleted
-- [ ] Remove blue box when focused
+- [x] Remove blue box when focused
 - [x] Improve scroll -> per element
 - [x] Fix apply tag to list
 - [x] Add track columns

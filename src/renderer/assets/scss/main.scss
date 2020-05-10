@@ -3,3 +3,8 @@
 
 @import '~bootstrap';
 @import '~bootstrap-vue';
+
+:focus {
+    box-shadow: 0 0 0 0.1rem rgba($mainColor, 0.2);
+    outline: none;
+}

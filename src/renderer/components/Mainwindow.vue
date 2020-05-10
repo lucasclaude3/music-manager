@@ -203,9 +203,6 @@ export default {
   input.form-control {
     margin-top: -8px;
     height: 30px;
-    &:focus {
-      box-shadow: 0 0 0 0.1rem rgba($mainColor, 0.2);
-    }
   }
 
   table {
@@ -231,6 +228,9 @@ export default {
     border-top: 1px solid $moreBlack;
     &.selected {
       background-color: rgba($mainColor, 0.5);
+    }
+    &:focus {
+      box-shadow: none;
     }
   }
 

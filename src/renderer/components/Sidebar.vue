@@ -36,7 +36,7 @@
         @click="applyCurrentTag()"
       >Apply current Tag</b-button>
       <b-button @click="createTag()" type="button">&#43; Add Tag</b-button>
-      <b-button @click="analyzeExistingTags()" type="button">&#43; Analyze existing Tags</b-button>
+      <b-button @click="analyzeComments()" type="button">&#43; Analyze comments</b-button>
     </div>
     <TagsAnalysisModal />
   </div>
@@ -125,7 +125,7 @@ export default {
     onBlur(event) {
       event.target.contentEditable = false;
     },
-    analyzeExistingTags() {
+    analyzeComments() {
       this.$modal.show('tags-analysis-modal');
     },
   },

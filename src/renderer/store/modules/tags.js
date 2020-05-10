@@ -6,7 +6,7 @@ const state = {
 };
 
 const mutations = {
-  LOAD_TAGS(state, payload) {
+  LOAD_USER_TAGS(state, payload) {
     state.tags = payload.tags || [];
   },
   ADD_TAG(state, payload) {
@@ -28,7 +28,7 @@ const actions = {
   loadTags({ commit }) {
     ipcRenderer.send('tags:load');
     ipcRenderer.on('tags:loaded', (event, tags) => {
-      commit({ type: 'LOAD_TAGS', tags: tags.filter(t => !!t.name) });
+      commit({ type: 'LOAD_USER_TAGS', tags: tags.filter(t => !!t.name) });
     });
   },
 

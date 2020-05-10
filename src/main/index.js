@@ -277,6 +277,21 @@ ipcMain.on('tag:applyToMetadata', (event, currentTag) => {
   );
 });
 
+ipcMain.on('tracks:analyzeComments', () => {
+  const untaggedTracks = store.get('tracks').filter(t => t.metadataComment && t.metadataComment.indexOf('[Custom Tags]') !== 0);
+  // const tagsArrays = untaggedTracks
+  //   .map(t => (t.metadataComment || '').replace('-', ' ')
+  // .split(' ').filter(tag => tag.length > 0))
+  //   .filter(tagsArray => tagsArray.length > 0);
+  // let tags = Array.concat.apply([], tagsArrays);
+  let comments = untaggedTracks.map(t => t.metadataComment);
+  comments = comments.filter((t, pos) => comments.indexOf(t) === pos);
+
+  // let userTags = Array.concat.apply(tracks.map(t => t.tagBag));
+  // userTags = userTags.filter(
+  mainWindow.webContents.send('tracks:analyzed', comments);
+});
+
 ipcMain.on('track:search', (event, { searchTerms, tag }) => {
   let tracks = store.get('tracks');
   if (searchTerms.length > 0) {

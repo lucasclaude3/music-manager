@@ -8,11 +8,19 @@ const state = {
 };
 
 const mutations = {
-  LOAD_USER_TRACKS(state, payload) {
+  LOAD_TRACKS(state, payload) {
     state.tracks = payload.tracks || [];
   },
   LOAD_COMMENTS(state, payload) {
     state.comments = payload.comments || [];
+  },
+  REMOVE_COMMENT(state, payload) {
+    const { comments } = state;
+    const index = state.comments.indexOf(payload.comment);
+    if (index > -1) {
+      comments.splice(index, 1);
+    }
+    state.comments = comments;
   },
   ADD_TRACKS(state, payload) {
     state.tracks = state.tracks.concat(payload.tracks);
@@ -34,7 +42,7 @@ const actions = {
   loadTracks({ commit }, tagId) {
     ipcRenderer.send('tracks:load', tagId);
     ipcRenderer.on('tracks:loaded', (event, tracks) => {
-      commit({ type: 'LOAD_USER_TRACKS', tracks });
+      commit({ type: 'LOAD_TRACKS', tracks });
       ipcRenderer.removeAllListeners('tracks:loaded');
     });
   },
@@ -43,7 +51,7 @@ const actions = {
     ipcRenderer.send('tracks:load');
     ipcRenderer.on('tracks:loaded', (event, tracks) => {
       const tracksToLoad = withoutTags ? tracks.filter(t => t.tagBag.length === 0) : tracks;
-      commit({ type: 'LOAD_USER_TRACKS', tracks: tracksToLoad });
+      commit({ type: 'LOAD_TRACKS', tracks: tracksToLoad });
       ipcRenderer.removeAllListeners('tracks:loaded');
     });
   },
@@ -80,7 +88,7 @@ const actions = {
     ipcRenderer.send('track:search', { searchTerms, tag });
     ipcRenderer.on('tracks:loaded', (event, tracks) => {
       const tracksToLoad = tag ? tracks.filter(t => t.tagBag.indexOf(tag.id) > -1) : tracks;
-      commit({ type: 'LOAD_USER_TRACKS', tracks: tracksToLoad });
+      commit({ type: 'LOAD_TRACKS', tracks: tracksToLoad });
       ipcRenderer.removeAllListeners('tracks:loaded');
     });
   },
@@ -91,6 +99,10 @@ const actions = {
       commit({ type: 'LOAD_COMMENTS', comments });
       ipcRenderer.removeAllListeners('tracks:analyzed');
     });
+  },
+
+  removeComment({ commit }, comment) {
+    commit({ type: 'REMOVE_COMMENT', comment });
   },
 };
 

@@ -2,8 +2,10 @@
   <modal
     name="tags-analysis-modal"
     id="tags-analysis-modal"
-    @before-open="beforeOpen">
+    @before-open="beforeOpen"
+    @opened="opened">
     <b-button @click="undoLastRemove">Undo</b-button>
+    <b-button @click="redoLastRemove">Redo</b-button>
     <ul>
       <li
         v-for="comment in comments"
@@ -11,7 +13,7 @@
         {{ comment }}
         <span
           class="cross"
-          @click="event => removeComment(event, comment)">&#10006;
+          @click="() => removeComment(comment)">&#10006;
         </span>
       </li>
     </ul>
@@ -20,40 +22,32 @@
 
 <script>
 import { mapState, mapActions } from 'vuex';
+import { undoRedoHistory } from '../store';
 
 export default {
   name: 'TagsAnalysisModal',
-  data() {
-    return {
-      lastIndexes: [],
-      lastComments: [],
-    };
-  },
   computed: {
     ...mapState('tracks', ['comments']),
   },
   methods: {
     ...mapActions({
       analyzeComments: 'tracks/analyzeComments',
+      removeComment: 'tracks/removeComment',
     }),
     beforeOpen() {
       this.analyzeComments();
     },
-    removeComment(event, comment) {
-      const lastIndex = this.comments.indexOf(comment);
-      this.lastIndexes.push(lastIndex);
-      if (lastIndex > -1) {
-        this.lastComments.push(this.comments[lastIndex]);
-        this.comments.splice(lastIndex, 1);
-      }
+    opened() {
+      this.initialCommentsLength = this.comments.length;
     },
     undoLastRemove() {
-      if (this.lastIndexes.length === 0) {
+      if (this.comments.length === this.initialCommentsLength) {
         return;
       }
-      const lastIndex = this.lastIndexes.pop();
-      const lastComment = this.lastComments.pop();
-      this.comments.splice(lastIndex, 0, lastComment);
+      undoRedoHistory.undo();
+    },
+    redoLastRemove() {
+      undoRedoHistory.redo();
     },
   },
 };

@@ -8962,6 +8962,11 @@ requires-port@^1.0.0:
   resolved "https://registry.yarnpkg.com/requires-port/-/requires-port-1.0.0.tgz#925d2601d39ac485e091cf0da5c6e694dc3dcaff"
   integrity sha1-kl0mAdOaxIXgkc8NpcbmlNw9yv8=
 
+resize-observer-polyfill@^1.5.1:
+  version "1.5.1"
+  resolved "https://registry.yarnpkg.com/resize-observer-polyfill/-/resize-observer-polyfill-1.5.1.tgz#0e9020dd3d21024458d4ebd27e23e40269810464"
+  integrity sha512-LwZrotdHOo12nQuZlHEmtuXdqGoOD0OhaxopaNFxWzInpEgaLWoVuAMbTzixuosCx2nEG58ngzW3vxdWoxIgdg==
+
 resolve-cwd@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/resolve-cwd/-/resolve-cwd-2.0.0.tgz#00a9f7387556e27038eae232caa372a6a59b665a"
@@ -10719,6 +10724,13 @@ vue-html-loader@^1.2.4:
     html-minifier "^2.1.5"
     loader-utils "^1.0.2"
     object-assign "^4.1.0"
+
+vue-js-modal@^2.0.0-rc.3:
+  version "2.0.0-rc.3"
+  resolved "https://registry.yarnpkg.com/vue-js-modal/-/vue-js-modal-2.0.0-rc.3.tgz#c34b33305af10b4ccecdbb381dd58efbb19e2862"
+  integrity sha512-Q9L9FsIUMuzCKSuB41D8LxV+Yc2q+zWHzzUdWaQ2KeHPS+78+X6AAnBztVoophbjt8UXHO7rQSRgER1MMw5qsw==
+  dependencies:
+    resize-observer-polyfill "^1.5.1"
 
 vue-loader@^15.2.4:
   version "15.7.2"

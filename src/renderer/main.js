@@ -2,6 +2,7 @@ import Vue from 'vue';
 import axios from 'axios';
 import BootstrapVue from 'bootstrap-vue';
 import VueSVGIcon from 'vue-svgicon';
+import VModal from 'vue-js-modal';
 
 import '@/assets/scss/main.scss';
 
@@ -11,6 +12,7 @@ import store from './store';
 if (!process.env.IS_WEB) Vue.use(require('vue-electron'));
 Vue.use(BootstrapVue);
 Vue.use(VueSVGIcon);
+Vue.use(VModal);
 Vue.http = Vue.prototype.$http = axios;
 Vue.config.productionTip = false;
 

@@ -87,8 +87,6 @@ export default {
     this.watchTrackAddition();
     this.watchTrackModification();
     window.addEventListener('resize', () => {
-      console.log(this.tracks);
-
       this.winHeight = window.innerHeight;
       this.winWidth = window.innerWidth;
     });

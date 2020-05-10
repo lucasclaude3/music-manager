@@ -1,48 +1,56 @@
 <template>
-  <nav class="sidebar">
-    Tags
-    <ul>
-      <li
-        class="tag"
-        @click="event => onClickAllTracks(event, false)"
-        :class="{ selected: !currentTag && !withoutTags }">
-        All tracks
-      </li>
-      <li
-        class="tag"
-        @click="event => onClickAllTracks(event, true)"
-        :class="{ selected: !currentTag && withoutTags }">
-        Tracks without Tags
-      </li>
-      <li
-        class="tag"
-        v-for="tag in orderedTags"
-        v-html="tag.name"
-        v-bind:key="tag.id"
-        v-bind:id="tag.id"
-        @keydown="event => onEnter(event, tag)"
-        @dragover="handleDragTrackover"
-        @dragleave="handleDragLeave"
-        @drop="handleDropTrack"
-        @click="event => onClick(event, tag)"
-        @dblclick="onDblClick"
-        @blur="onBlur"
-        :class="{ selected: currentTag && currentTag.id === tag.id }">
-      </li>
-    </ul>
-    <b-button
-      v-if="currentTag !== null"
-      @click="applyCurrentTag()"
-    >Apply current Tag</b-button>
-    <b-button @click="createTag()" type="button">&#43; Add Tag</b-button>
-  </nav>
+  <div>
+    <div class="sidebar">
+      Tags
+      <ul>
+        <li
+          class="tag"
+          @click="event => onClickAllTracks(event, false)"
+          :class="{ selected: !currentTag && !withoutTags }">
+          All tracks
+        </li>
+        <li
+          class="tag"
+          @click="event => onClickAllTracks(event, true)"
+          :class="{ selected: !currentTag && withoutTags }">
+          Tracks without Tags
+        </li>
+        <li
+          class="tag"
+          v-for="tag in orderedTags"
+          v-html="tag.name"
+          v-bind:key="tag.id"
+          v-bind:id="tag.id"
+          @keydown="event => onEnter(event, tag)"
+          @dragover="handleDragTrackover"
+          @dragleave="handleDragLeave"
+          @drop="handleDropTrack"
+          @click="event => onClick(event, tag)"
+          @dblclick="onDblClick"
+          @blur="onBlur"
+          :class="{ selected: currentTag && currentTag.id === tag.id }">
+        </li>
+      </ul>
+      <b-button
+        v-if="currentTag !== null"
+        @click="applyCurrentTag()"
+      >Apply current Tag</b-button>
+      <b-button @click="createTag()" type="button">&#43; Add Tag</b-button>
+      <b-button @click="analyzeExistingTags()" type="button">&#43; Analyze existing Tags</b-button>
+    </div>
+    <TagsAnalysisModal />
+  </div>
 </template>
 
 <script>
 import { mapState, mapActions } from 'vuex';
+import TagsAnalysisModal from './TagsAnalysisModal';
 
 export default {
   name: 'Sidebar',
+  components: {
+    TagsAnalysisModal,
+  },
   data() {
     return {
       withoutTags: false,
@@ -117,6 +125,9 @@ export default {
     onBlur(event) {
       event.target.contentEditable = false;
     },
+    analyzeExistingTags() {
+      this.$modal.show('tags-analysis-modal');
+    },
   },
 };
 
@@ -151,5 +162,6 @@ export default {
     background-color: $moreBlack;
     font-size: 16px;
     line-height: 16px;
+    display: block;
   }
 </style>

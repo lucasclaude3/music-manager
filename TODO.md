@@ -18,3 +18,4 @@
 - [x] Work on design (!!) https://www.flaticon.com/packs/solid-media-elements
 - [ ] Load tags from another pc
 - [ ] Reset tags that are not used anymore
+- [ ] Delete useless comments

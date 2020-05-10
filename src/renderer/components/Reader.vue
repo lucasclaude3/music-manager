@@ -207,7 +207,7 @@ export default {
     width: 100px;
     margin: 0 auto;
     text-align: center;
-    color: $moreBlack;
+    color: rgba($white, 0.8);
   }
 
   .progress {

@@ -19,3 +19,4 @@
 - [ ] Load tags from another pc
 - [ ] Reset tags that are not used anymore
 - [ ] Delete useless comments
+- [ ] Limit state history size

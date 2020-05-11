@@ -12,15 +12,26 @@ const mutations = {
     state.tracks = payload.tracks || [];
   },
   LOAD_COMMENTS(state, payload) {
-    state.comments = payload.comments || [];
+    state.comments = (payload.comments || [])
+      .map(c => ({
+        originalComment: c,
+        modifiedComment: c,
+        selected: true,
+        hasBeenModified: false,
+      }));
   },
-  REMOVE_COMMENT(state, payload) {
-    const { comments } = state;
-    const index = state.comments.indexOf(payload.comment);
-    if (index > -1) {
-      comments.splice(index, 1);
-    }
-    state.comments = comments;
+  TOGGLE_REMOVE_COMMENT(state, payload) {
+    const { comment } = payload;
+    comment.selected = !comment.selected;
+    const idx = state.comments.findIndex(c => c.originalComment === comment.originalComment);
+    state.comments.splice(idx, 1, comment);
+  },
+  UPDATE_COMMENT(state, payload) {
+    const { comment, newValue } = payload;
+    comment.modifiedComment = newValue;
+    comment.hasBeenModified = true;
+    const idx = state.comments.findIndex(c => c.originalComment === comment.originalComment);
+    state.comments.splice(idx, 1, comment);
   },
   ADD_TRACKS(state, payload) {
     state.tracks = state.tracks.concat(payload.tracks);
@@ -101,8 +112,12 @@ const actions = {
     });
   },
 
-  removeComment({ commit }, comment) {
-    commit({ type: 'REMOVE_COMMENT', comment });
+  toggleRemoveComment({ commit }, comment) {
+    commit({ type: 'TOGGLE_REMOVE_COMMENT', comment });
+  },
+
+  updateComment({ commit }, { comment, newValue }) {
+    commit({ type: 'UPDATE_COMMENT', comment, newValue });
   },
 };
 

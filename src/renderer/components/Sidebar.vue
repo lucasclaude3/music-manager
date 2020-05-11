@@ -84,9 +84,9 @@ export default {
       event.preventDefault();
       const updatedTag = { ...tag };
       if (event.keyCode === 27) {
-        event.target.innerHTML = updatedTag.name;
-      } else if (event.keyCode === 13 && event.target.innerHTML) {
-        updatedTag.name = event.target.innerHTML;
+        event.target.innerText = updatedTag.name;
+      } else if (event.keyCode === 13 && event.target.innerText) {
+        updatedTag.name = event.target.innerText;
         this.updateTag(updatedTag);
       } else {
         this.deleteTag(updatedTag);

@@ -17,6 +17,8 @@
 - [x] Move import to folder
 - [x] Work on design (!!) https://www.flaticon.com/packs/solid-media-elements
 - [ ] Load tags from another pc
+- [ ] Rework event handlers for batch treatment
+- [ ] Close modal when done
 - [ ] Reset tags that are not used anymore
 - [ ] Delete useless comments
 - [ ] Limit state history size

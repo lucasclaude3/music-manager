@@ -119,6 +119,20 @@ const actions = {
   updateComment({ commit }, { comment, newValue }) {
     commit({ type: 'UPDATE_COMMENT', comment, newValue });
   },
+
+  applyTags({ commit }, comments) {
+    ipcRenderer.send('tracks:applyTags', comments);
+    ipcRenderer.on('track:tagAdded', (event, track) => {
+      commit({ type: 'UPDATE_TRACK', track });
+      ipcRenderer.removeAllListeners('track:tagAdded');
+    });
+    ipcRenderer.on('tags:created', (event, tags) => {
+      tags.forEach((tag) => {
+        commit({ type: 'tags/ADD_TAG', tag }, { root: true });
+      });
+      ipcRenderer.removeAllListeners('tags:created');
+    });
+  },
 };
 
 export default {

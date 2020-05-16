@@ -288,6 +288,40 @@ ipcMain.on('tracks:analyzeComments', () => {
   mainWindow.webContents.send('tracks:analyzed', unprocessedTags);
 });
 
+ipcMain.on('tracks:applyTags', (event, comments) => {
+  let tags = store.get('tags') || [];
+  const tagNames = tags.map(t => t.name);
+  const newTags = comments
+    .filter(c => tagNames.indexOf(c.modifiedComment) === -1)
+    .map((c, idx) => ({
+      id: autoId(),
+      name: c.modifiedComment,
+      created_at: Date.now(),
+      order: tags.length + idx + 1,
+    }));
+  tags = tags.concat(newTags);
+  store.set({ tags });
+  mainWindow.webContents.send('tags:created', newTags);
+
+  const tracksWithoutCustomTags = store.get('tracks')
+    .filter(t => !t.metadataComment || t.metadataComment.indexOf('[Custom Tags]') !== 0);
+  const tracksWithCustomTags = store.get('tracks')
+    .filter(t => t.metadataComment && t.metadataComment.indexOf('[Custom Tags]') === 0);
+
+  tracksWithCustomTags.forEach((track) => {
+    comments.forEach((c) => {
+      if (track.metadataComment.indexOf(c.originalComment) > -1) {
+        const newTag = tags.find(tag => tag.name === c.modifiedComment);
+        if (track.tagBag.indexOf(newTag.id) === -1) {
+          track.tagBag.push(newTag.id);
+        }
+      }
+    });
+    mainWindow.webContents.send('track:tagAdded', track);
+  });
+  store.set({ tracks: tracksWithoutCustomTags.concat(tracksWithCustomTags) });
+});
+
 ipcMain.on('track:search', (event, { searchTerms, tag }) => {
   let tracks = store.get('tracks');
   if (searchTerms.length > 0) {

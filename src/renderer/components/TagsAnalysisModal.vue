@@ -48,6 +48,11 @@
         ></svgicon>
       </li>
     </ul>
+    <div>
+      <b-button @click="() => applyTags(comments)" type="button">
+        Apply tags
+      </b-button>
+    </div>
   </modal>
 </template>
 
@@ -68,6 +73,7 @@ export default {
       analyzeComments: 'tracks/analyzeComments',
       toggleRemoveComment: 'tracks/toggleRemoveComment',
       updateComment: 'tracks/updateComment',
+      applyTags: 'tracks/applyTags',
     }),
     beforeOpen() {
       this.analyzeComments();

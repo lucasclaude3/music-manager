@@ -31,12 +31,15 @@
           :class="{ selected: currentTag && currentTag.id === tag.id }">
         </li>
       </ul>
-      <b-button
-        v-if="currentTag !== null"
-        @click="applyCurrentTag()"
-      >Apply current Tag</b-button>
-      <b-button @click="createTag()" type="button">&#43; Add Tag</b-button>
-      <b-button @click="analyzeComments()" type="button">&#43; Analyze comments</b-button>
+      <b-button @click="applyCurrentTag()" type="button" v-if="currentTag !== null">
+        Apply current Tag
+      </b-button>
+      <b-button @click="createTag()" type="button">
+        &#43; Add Tag
+      </b-button>
+      <b-button @click="analyzeComments()" type="button">
+        &#43; Analyze comments
+      </b-button>
     </div>
     <TagsAnalysisModal />
   </div>

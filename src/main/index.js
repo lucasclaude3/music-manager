@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, Menu, dialog } from 'electron' // eslint-disable-line
+import { app, BrowserWindow, ipcMain, Menu, dialog, ipcRenderer } from 'electron' // eslint-disable-line
 import Store from 'electron-store';
 import { Promise } from 'bluebird';
 import NodeID3 from 'node-id3';
@@ -32,12 +32,13 @@ const stat = Promise.promisify(fs.stat);
 
 const store = new Store();
 // store.clear();
-const mainIndex = new BulkSearch();
+const tags = store.get('tags') || [];
 const tracks = store.get('tracks') || [];
+const mainIndex = new BulkSearch();
 tracks.forEach((t) => {
   mainIndex.add(t.id, t.name);
 });
-store.set({ tracks });
+store.set({ tracks, tags });
 
 const autoId = (() => {
   let seed = store.get('seed') || 0;
@@ -196,7 +197,7 @@ app.on('ready', () => {
  */
 
 ipcMain.on('tag:create', () => {
-  const tags = store.get('tags') || [];
+  const tags = store.get('tags');
   const newTag = {
     id: autoId(),
     name: `New tag ${tags.length + 1}`,
@@ -209,20 +210,29 @@ ipcMain.on('tag:create', () => {
 });
 
 ipcMain.on('tag:update', (event, updatedTag) => {
-  const tags = (store.get('tags') || []).filter(t => t.id !== updatedTag.id);
+  const tags = store.get('tags').filter(t => t.id !== updatedTag.id);
   tags.push(updatedTag);
   store.set({ tags });
   mainWindow.webContents.send('tag:updated', updatedTag);
 });
 
 ipcMain.on('tag:delete', (event, deletedTag) => {
-  const tags = (store.get('tags') || []).filter(t => t.id !== deletedTag.id);
+  const tags = store.get('tags').filter(t => t.id !== deletedTag.id);
   store.set({ tags });
   mainWindow.webContents.send('tag:deleted', deletedTag);
+
+  const tracks = store.get('tracks');
+  tracks.forEach((track) => {
+    const idx = track.tagBag.indexOf(deletedTag.id);
+    if (idx > -1) {
+      track.tagBag.splice(idx, 1);
+      mainWindow.webContents.send('track:updated', track);
+    }
+  });
 });
 
 ipcMain.on('tags:load', () => {
-  mainWindow.webContents.send('tags:loaded', store.get('tags') || []);
+  mainWindow.webContents.send('tags:loaded', store.get('tags'));
 });
 
 ipcMain.on('tracks:load', (event, tagId) => {
@@ -234,16 +244,15 @@ ipcMain.on('tracks:load', (event, tagId) => {
 });
 
 ipcMain.on('tracks:addTag', (event, { tagId, trackIds }) => {
-  const tracks = store.get('tracks').filter(t => trackIds.indexOf(t.id) === -1);
+  const unmodifiedTracks = store.get('tracks').filter(t => trackIds.indexOf(t.id) === -1);
   const modifiedTracks = store.get('tracks').filter(t => trackIds.indexOf(t.id) > -1);
-  modifiedTracks.forEach((t) => {
-    if (t.tagBag.indexOf(parseInt(tagId, 10)) === -1) {
-      t.tagBag.push(parseInt(tagId, 10));
+  modifiedTracks.forEach((track) => {
+    if (track.tagBag.indexOf(parseInt(tagId, 10)) === -1) {
+      track.tagBag.push(parseInt(tagId, 10));
     }
-    tracks.push(t);
-    mainWindow.webContents.send('track:tagAdded', t);
+    mainWindow.webContents.send('track:tagsAdded', track);
   });
-  store.set({ tracks });
+  store.set({ tracks: unmodifiedTracks.concat(modifiedTracks) });
 });
 
 ipcMain.on('tag:applyToMetadata', (event, currentTag) => {
@@ -277,19 +286,50 @@ ipcMain.on('tag:applyToMetadata', (event, currentTag) => {
   );
 });
 
+ipcMain.on('tracks:clearAllMetadata', () => {
+  const tracks = store.get('tracks');
+  Promise.map(
+    tracks,
+    (track) => {
+      const tagNames = [];
+      track.tagBag.forEach((tagId) => {
+        const tag = tags.find(tagObj => tagObj.id === tagId);
+        tagNames.push(tag.name);
+      });
+      const modifiedTrack = updateTrack(track.id, {
+        shortComment: '',
+        metadataComment: '',
+      });
+      mainWindow.webContents.send('track:updated', modifiedTrack);
+      return writeMetadata(track.path, {
+        comment: {
+          language: 'eng',
+          text: '',
+        },
+      });
+    },
+    { concurrency: 5 },
+  );
+});
+
 ipcMain.on('tracks:analyzeComments', () => {
-  const tagNames = store.get('tags').map(t => t.name);
   const tracksWithUnprocessedTags = store.get('tracks')
     .filter(t => t.metadataComment && t.metadataComment.indexOf('[Custom Tags]') === 0);
+  if (tracksWithUnprocessedTags.length === 0) {
+    mainWindow.webContents.send('tracks:analyzed', []);
+    return;
+  }
+  const tagNames = store.get('tags').map(t => t.name);
   const unprocessedTagsArrays = tracksWithUnprocessedTags.map(c => parseComment(c.metadataComment).split(' - '));
   let unprocessedTags = Array.concat.apply([], unprocessedTagsArrays)
+    .map(ut => ut.trim())
     .filter(ut => tagNames.indexOf(ut) === -1);
   unprocessedTags = unprocessedTags.filter((t, pos) => unprocessedTags.indexOf(t) === pos);
   mainWindow.webContents.send('tracks:analyzed', unprocessedTags);
 });
 
 ipcMain.on('tracks:applyTags', (event, comments) => {
-  let tags = store.get('tags') || [];
+  let tags = store.get('tags');
   const tagNames = tags.map(t => t.name);
   const newTags = comments
     .filter(c => tagNames.indexOf(c.modifiedComment) === -1)
@@ -317,9 +357,35 @@ ipcMain.on('tracks:applyTags', (event, comments) => {
         }
       }
     });
-    mainWindow.webContents.send('track:tagAdded', track);
+    mainWindow.webContents.send('track:tagsAdded', track);
   });
   store.set({ tracks: tracksWithoutCustomTags.concat(tracksWithCustomTags) });
+
+  Promise.map(
+    tracksWithCustomTags,
+    (track) => {
+      const tagNames = [];
+      track.tagBag.forEach((tagId) => {
+        const tag = tags.find(tagObj => tagObj.id === tagId);
+        tagNames.push(tag.name);
+      });
+      const shortComment = tagNames.join(' - ');
+      const modifiedTrack = updateTrack(track.id, {
+        shortComment,
+        metadataComment: `[Custom Tags] ${shortComment}`,
+      });
+      mainWindow.webContents.send('track:updated', modifiedTrack);
+      return writeMetadata(track.path, {
+        comment: {
+          language: 'eng',
+          text: `[Custom Tags] ${shortComment}`,
+        },
+      });
+    },
+    { concurrency: 5 },
+  ).then(() => {
+    mainWindow.webContents.send('tracks:tagsAppliedSuccessfully');
+  });
 });
 
 ipcMain.on('track:search', (event, { searchTerms, tag }) => {

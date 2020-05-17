@@ -85,7 +85,7 @@ export default {
       if (!comment.selected) {
         this.toggleRemoveComment(comment);
       }
-      const newValue = comment.modifiedComment;
+      const newValue = comment.modifiedComment.trim();
       this.updateComment({ comment, newValue });
       const elt = window.document.getElementById(comment.originalComment);
       elt.setAttribute('contentEditable', true);

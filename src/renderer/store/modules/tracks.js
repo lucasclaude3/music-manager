@@ -69,9 +69,9 @@ const actions = {
 
   addTagToTracks({ commit }, { tagId, trackIds }) {
     ipcRenderer.send('tracks:addTag', { tagId, trackIds });
-    ipcRenderer.on('track:tagAdded', (event, track) => {
+    ipcRenderer.on('track:tagsAdded', (event, track) => {
       commit({ type: 'UPDATE_TRACK', track });
-      ipcRenderer.removeAllListeners('track:tagAdded');
+      ipcRenderer.removeAllListeners('track:tagsAdded');
     });
   },
 
@@ -121,10 +121,11 @@ const actions = {
   },
 
   applyTags({ commit }, comments) {
-    ipcRenderer.send('tracks:applyTags', comments);
-    ipcRenderer.on('track:tagAdded', (event, track) => {
+    const selectedComments = comments.filter(c => c.selected === true);
+    ipcRenderer.send('tracks:applyTags', selectedComments);
+    ipcRenderer.on('track:tagsAdded', (event, track) => {
       commit({ type: 'UPDATE_TRACK', track });
-      ipcRenderer.removeAllListeners('track:tagAdded');
+      ipcRenderer.removeAllListeners('track:tagsAdded');
     });
     ipcRenderer.on('tags:created', (event, tags) => {
       tags.forEach((tag) => {

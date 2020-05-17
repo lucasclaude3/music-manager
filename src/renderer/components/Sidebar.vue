@@ -40,6 +40,9 @@
       <b-button @click="analyzeComments()" type="button">
         &#43; Analyze comments
       </b-button>
+      <b-button @click="clearAllMetadata()" type="button">
+        &#43; Clear all Metadata
+      </b-button>
     </div>
     <TagsAnalysisModal />
   </div>
@@ -47,6 +50,7 @@
 
 <script>
 import { mapState, mapActions } from 'vuex';
+import { ipcRenderer } from 'electron';
 import TagsAnalysisModal from './TagsAnalysisModal';
 
 export default {
@@ -126,10 +130,19 @@ export default {
       event.target.contentEditable = true;
     },
     onBlur(event) {
+      const updatedTag = this.tags.find(t => t.id === parseInt(event.target.id, 10));
+      event.target.innerText = updatedTag.name;
       event.target.contentEditable = false;
     },
     analyzeComments() {
       this.$modal.show('tags-analysis-modal');
+      ipcRenderer.on('tracks:tagsAppliedSuccessfully', () => {
+        this.$modal.hide('tags-analysis-modal');
+        ipcRenderer.removeAllListeners('tracks:tagsAppliedSuccessfully');
+      });
+    },
+    clearAllMetadata() {
+      ipcRenderer.send('tracks:clearAllMetadata');
     },
   },
 };

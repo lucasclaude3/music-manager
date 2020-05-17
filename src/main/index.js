@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, Menu, dialog, ipcRenderer } from 'electron' // eslint-disable-line
+import { app, BrowserWindow, ipcMain, Menu, dialog } from 'electron' // eslint-disable-line
 import Store from 'electron-store';
 import { Promise } from 'bluebird';
 import NodeID3 from 'node-id3';
@@ -32,6 +32,7 @@ const stat = Promise.promisify(fs.stat);
 
 const store = new Store();
 // store.clear();
+
 const tags = store.get('tags') || [];
 const tracks = store.get('tracks') || [];
 const mainIndex = new BulkSearch();
@@ -229,6 +230,7 @@ ipcMain.on('tag:delete', (event, deletedTag) => {
       mainWindow.webContents.send('track:updated', track);
     }
   });
+  store.set({ tracks });
 });
 
 ipcMain.on('tags:load', () => {
@@ -332,10 +334,10 @@ ipcMain.on('tracks:applyTags', (event, comments) => {
   let tags = store.get('tags');
   const tagNames = tags.map(t => t.name);
   const newTags = comments
-    .filter(c => tagNames.indexOf(c.modifiedComment) === -1)
+    .filter(c => tagNames.indexOf(c.modifiedComment.trim()) === -1)
     .map((c, idx) => ({
       id: autoId(),
-      name: c.modifiedComment,
+      name: c.modifiedComment.trim(),
       created_at: Date.now(),
       order: tags.length + idx + 1,
     }));

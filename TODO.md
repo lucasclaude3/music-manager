@@ -7,8 +7,8 @@
 - [x] Apply all possible tags to the comments (what format? JSON? CSV?)
 - [x] Implement quick search in tracks - https://github.com/nextapps-de/flexsearch
 - [x] Remove tags and tracks duplicates
-- [ ] Update comments when modifiying a tag name
-- [ ] Remove a tag from Tagbags when it's deleted
+- [x] Update comments when modifiying a tag name
+- [x] Remove a tag from Tagbags when it's deleted
 - [x] Remove blue box when focused
 - [x] Improve scroll -> per element
 - [x] Fix apply tag to list
@@ -16,9 +16,17 @@
 - [x] Implement track progression in reader
 - [x] Move import to folder
 - [x] Work on design (!!) https://www.flaticon.com/packs/solid-media-elements
-- [ ] Load tags from another pc
-- [ ] Rework event handlers for batch treatment
-- [ ] Close modal when done
-- [ ] Reset tags that are not used anymore
-- [ ] Delete useless comments
+- [x] Load tags from another pc
+- [x] Rework event handlers for batch treatment
+- [x] Close modal when done
+- [x] Reset tags that are not used anymore
+- [x] Delete useless comments
+- [ ] Modal text when no old tag found
+- [ ] Apply all tags not applied yet?
+- [ ] Analyze genres?
+- [ ] Resize columns
+- [ ] Open file in folder
+- [ ] Better icons
+- [ ] Show total time + remaining
+- [ ] Loaders and notifs
 - [ ] Limit state history size

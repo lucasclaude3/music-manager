@@ -40,9 +40,9 @@
       <b-button @click="analyzeComments()" type="button">
         &#43; Analyze comments
       </b-button>
-      <b-button @click="clearAllMetadata()" type="button">
+      <!-- <b-button @click="clearAllMetadata()" type="button">
         &#43; Clear all Metadata
-      </b-button>
+      </b-button> -->
     </div>
     <TagsAnalysisModal />
   </div>

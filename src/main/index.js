@@ -29,6 +29,7 @@ const writeMetadata = (filepath, tags) =>
 
 const readDir = Promise.promisify(fs.readdir);
 const stat = Promise.promisify(fs.stat);
+const moveFile = Promise.promisify(fs.rename);
 
 const store = new Store();
 // store.clear();
@@ -62,6 +63,14 @@ const analyzeDirectory = async (dir) => {
   return files.reduce((a, f) => a.concat(f), []);
 };
 
+const flattenFolder = async (dir) => {
+  const files = await analyzeDirectory(dir);
+  Promise.map(
+    files,
+    async file => moveFile(file, path.join(dir, path.basename(file))),
+  );
+};
+
 const analyzePaths = dirs => Promise
   .map(
     dirs,
@@ -79,7 +88,7 @@ if (process.env.NODE_ENV !== 'development') {
 
 let mainWindow;
 const winURL = process.env.NODE_ENV === 'development'
-  ? 'http://localhost:9080'
+  ? 'http://localhost:9081'
   : `file://${__dirname}/index.html`;
 
 function createWindow() {
@@ -427,6 +436,13 @@ const menuTemplate = [
             },
           },
         ],
+      },
+      {
+        label: 'Flatten Folder',
+        click() {
+          dialog.showOpenDialog(mainWindow, { properties: ['openDirectory'] })
+            .then(result => flattenFolder(result.filePaths[0]));
+        },
       },
       {
         label: 'Quit',

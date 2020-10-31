@@ -446,6 +446,11 @@ ipcMain.on('columns:load', () => {
   mainWindow.webContents.send('columns:loaded', columns);
 });
 
+ipcMain.on('columns:load_all', () => {
+  const columns = store.get('columns');
+  mainWindow.webContents.send('columns:loaded_all', columns);
+});
+
 ipcMain.on('columns:invert_order', (event, columnId) => {
   const columns = store.get('columns');
   columns.forEach((c) => {

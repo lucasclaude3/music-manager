@@ -71,6 +71,8 @@
 
 <script>
 import { mapState, mapActions } from 'vuex';
+import { remote, ipcRenderer } from 'electron';
+const { Menu, MenuItem } = remote;
 
 export default {
   name: 'MainWindow',
@@ -89,6 +91,7 @@ export default {
     };
   },
   mounted() {
+    this.loadContextMenu();
     this.loadColumns(window.innerWidth - 250);
     this.loadTracks();
     this.watchTrackAddition();
@@ -198,6 +201,24 @@ export default {
         this.firstSelectedElement = null;
         this.secondSelectedElement = null;
       }
+    },
+    loadContextMenu() {
+      ipcRenderer.send('columns:load_all');
+      ipcRenderer.on('columns:loaded_all', (event, columns) => {
+        ipcRenderer.removeAllListeners('columns:loaded_all');
+        const menu = new Menu();
+        columns.forEach((c) => {
+          console.log(c);
+          menu.append(new MenuItem({ label: c.trad, type: 'checkbox', checked: true }));
+        });
+
+        // Prevent default action of right click in chromium. Replace with our menu.
+        window.document.getElementById('tracks-header').addEventListener('contextmenu', (e) => {
+          console.log(e);
+          // e.preventDefault();
+          menu.popup(remote.getCurrentWindow());
+        }, false);
+      });
     },
     sortBy(key) {
       if (this.sortKey === key) {

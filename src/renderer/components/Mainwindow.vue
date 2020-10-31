@@ -29,6 +29,7 @@
       <tbody
         class="table-scroll"
         :style="{ 'max-height': `${winHeight - 226}px` }"
+        @keydown="event => removeTracks(event)"
       >
         <tr
           class="track"
@@ -122,7 +123,21 @@ export default {
       watchTrackModification: 'tracks/watchTrackModification',
       launchTrack: 'tracks/launchTrack',
       searchTrack: 'tracks/searchTrack',
+      removeTracksFromList: 'tracks/removeTracksFromList',
     }),
+    removeTracks(event) {
+      if (!(event.metaKey && event.keyCode === 8)) {
+        return;
+      }
+      if (this.firstSelectedElement === null) {
+        return;
+      }
+      const selectedTrackIds = this.orderedTracks
+        .filter(t => t.index >= parseInt(this.firstSelectedElement.id, 10)
+                  && t.index <= parseInt(this.secondSelectedElement.id, 10))
+        .map(t => t.id);
+      this.removeTracksFromList({ trackIds: selectedTrackIds, tag: this.currentTag });
+    },
     handleDragTrack(event) {
       if (this.firstSelectedElement === null
         || event.target.id < parseInt(this.firstSelectedElement.id, 10)

@@ -104,6 +104,15 @@ const actions = {
     });
   },
 
+  removeTracksFromList({ commit }, { trackIds, tag }) {
+    ipcRenderer.send('tracks:remove', { trackIds, tag });
+    ipcRenderer.on('tracks:loaded', (event, tracks) => {
+      const tracksToLoad = tag ? tracks.filter(t => t.tagBag.indexOf(tag.id) > -1) : tracks;
+      commit({ type: 'LOAD_TRACKS', tracks: tracksToLoad });
+      ipcRenderer.removeAllListeners('tracks:loaded');
+    });
+  },
+
   analyzeComments({ commit }) {
     ipcRenderer.send('tracks:analyzeComments');
     ipcRenderer.on('tracks:analyzed', (event, comments) => {

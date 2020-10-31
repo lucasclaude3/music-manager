@@ -409,6 +409,22 @@ ipcMain.on('track:search', (event, { searchTerms, tag }) => {
   mainWindow.webContents.send('tracks:loaded', tracks);
 });
 
+ipcMain.on('tracks:remove', (event, { trackIds, tag }) => {
+  let remainingTracks = store.get('tracks').filter(t => trackIds.indexOf(t.id) === -1);
+  const removedTracks = store.get('tracks').filter(t => trackIds.indexOf(t.id) > -1);
+  if (tag) {
+    removedTracks.forEach((track) => {
+      const idx = track.tagBag.indexOf(tag.id);
+      if (idx > -1) {
+        track.tagBag.splice(idx, 1);
+      }
+    });
+    remainingTracks = remainingTracks.concat(removedTracks);
+  }
+  store.set('tracks', remainingTracks);
+  mainWindow.webContents.send('tracks:loaded', remainingTracks);
+});
+
 const menuTemplate = [
   {
     label: '',

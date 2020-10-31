@@ -14,7 +14,7 @@
       <thead>
         <tr>
           <th
-            v-for="column in columns"
+            v-for="column in orderedColumns"
             v-bind:key="column.id"
             @click="sortBy(column.id)"
             :class="{ active: sortKey == column.id }"
@@ -51,7 +51,7 @@
                            && track.index <= parseInt(secondSelectedElement.id, 10) }"
         >
           <td
-            v-for="column in columns"
+            v-for="column in orderedColumns"
             v-bind:key="column.id"
             class="no-pointer-events"
             :style="{
@@ -97,10 +97,14 @@ export default {
     ...mapState('tracks', ['tracks']),
     ...mapState('tags', ['currentTag']),
     ...mapState('columns', ['columns']),
+    orderedColumns() {
+      return [...this.columns].sort((a, b) => (a.revColOrder < b.revColOrder ? -1 : 1));
+    },
     orderedTracks() {
-      const { sortKey } = this;
-      const order = (this.columns[sortKey] && this.columns[sortKey].sortOrder) || 1;
-      const tmpTracks = [...this.tracks]
+      const { sortKey, columns, tracks } = this;
+      const column = columns.find(c => c.id === sortKey);
+      const order = (column && column.sortOrder) || 1;
+      const tmpTracks = [...tracks]
         .sort((a, b) => {
           const aSortKey = a[sortKey] || '';
           const bSortKey = b[sortKey] || '';
@@ -127,6 +131,7 @@ export default {
       searchTrack: 'tracks/searchTrack',
       removeTracksFromList: 'tracks/removeTracksFromList',
       loadColumns: 'columns/loadColumns',
+      invertOrder: 'columns/invertOrder',
     }),
     removeTracks(event) {
       if (!(event.metaKey && event.keyCode === 8)) {
@@ -185,8 +190,11 @@ export default {
       }
     },
     sortBy(key) {
+      if (this.sortKey === key) {
+        const columnToUpdate = this.columns.find(c => c.id === key);
+        this.invertOrder(columnToUpdate.id);
+      }
       this.sortKey = key;
-      this.column.sortOrder *= -1;
     },
   },
 };

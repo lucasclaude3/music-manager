@@ -446,6 +446,17 @@ ipcMain.on('columns:load', () => {
   mainWindow.webContents.send('columns:loaded', columns);
 });
 
+ipcMain.on('columns:invert_order', (event, columnId) => {
+  const columns = store.get('columns');
+  columns.forEach((c) => {
+    if (c.id === columnId) {
+      c.sortOrder *= -1;
+    }
+  });
+  store.set({ columns });
+  mainWindow.webContents.send('columns:loaded', columns.filter(c => c.visible));
+});
+
 const menuTemplate = [
   {
     label: '',

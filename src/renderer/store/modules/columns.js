@@ -8,6 +8,12 @@ const mutations = {
   LOAD_COLUMNS(state, payload) {
     state.columns = payload.columns || [];
   },
+  INVERT_ORDER(state, payload) {
+    const oldColumns = state.columns.filter(c => c.id !== payload.columnId);
+    const invertedColumn = state.columns.find(c => c.id === payload.columnId);
+    invertedColumn.sortOrder *= -1;
+    state.columns = oldColumns.concat([invertedColumn]);
+  },
 };
 
 const actions = {
@@ -19,6 +25,13 @@ const actions = {
           c.size = windowWidth - columns.map(col => col.size || 0).reduce((acc, s) => acc + s);
         }
       });
+      commit({ type: 'LOAD_COLUMNS', columns });
+      ipcRenderer.removeAllListeners('columns:loaded');
+    });
+  },
+  invertOrder({ commit }, columnId) {
+    ipcRenderer.send('columns:invert_order', columnId);
+    ipcRenderer.on('columns:loaded', (event, columns) => {
       commit({ type: 'LOAD_COLUMNS', columns });
       ipcRenderer.removeAllListeners('columns:loaded');
     });

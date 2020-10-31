@@ -14,14 +14,17 @@
       <thead>
         <tr>
           <th
-            v-for="key in Object.keys(columns)"
-            v-bind:key="key"
-            @click="sortBy(key)"
-            :class="{ active: sortKey == key }"
-            :style="{ 'max-width': `${columns[key].size}px`, 'min-width': `${columns[key].size}px`}"
+            v-for="column in columns"
+            v-bind:key="column.id"
+            @click="sortBy(column.id)"
+            :class="{ active: sortKey == column.id }"
+            :style="{
+              'max-width': `${column.size}px`,
+              'min-width': `${column.size}px`
+            }"
           >
-            {{ columns[key].trad | capitalize }}
-            <span class="arrow" :class="columns[key].sortOrder > 0 ? 'asc' : 'dsc'">
+            {{ column.trad | capitalize }}
+            <span class="arrow" :class="column.sortOrder > 0 ? 'asc' : 'dsc'">
             </span>
           </th>
         </tr>
@@ -48,12 +51,15 @@
                            && track.index <= parseInt(secondSelectedElement.id, 10) }"
         >
           <td
-            v-for="key in Object.keys(columns)"
-            v-bind:key="key"
+            v-for="column in columns"
+            v-bind:key="column.id"
             class="no-pointer-events"
-            :style="{ 'max-width': `${columns[key].size}px`, 'min-width': `${columns[key].size}px`}"
+            :style="{
+              'max-width': `${column.size}px`,
+              'min-width': `${column.size}px`
+            }"
           >
-            <span>{{track[key]}}</span>
+            <span>{{track[column.id]}}</span>
           </td>
         </tr>
       </tbody>
@@ -67,34 +73,30 @@ import { mapState, mapActions } from 'vuex';
 export default {
   name: 'MainWindow',
   data() {
-    const columns = {
-      name: { size: 450, sortOrder: 1, trad: 'name' },
-      genre: { size: 150, sortOrder: 1, trad: 'genre' },
-      shortComment: { size: window.innerWidth, sortOrder: 1, trad: 'comment' },
-    };
-
     return {
       searchTerms: '',
       firstSelectedElement: null,
       secondSelectedElement: null,
-      columns,
       sortKey: '',
       winHeight: window.innerHeight,
       winWidth: window.innerWidth,
     };
   },
   mounted() {
+    this.loadColumns(window.innerWidth - 250);
     this.loadTracks();
     this.watchTrackAddition();
     this.watchTrackModification();
     window.addEventListener('resize', () => {
       this.winHeight = window.innerHeight;
       this.winWidth = window.innerWidth;
+      this.loadColumns(window.innerWidth - 250);
     });
   },
   computed: {
     ...mapState('tracks', ['tracks']),
     ...mapState('tags', ['currentTag']),
+    ...mapState('columns', ['columns']),
     orderedTracks() {
       const { sortKey } = this;
       const order = (this.columns[sortKey] && this.columns[sortKey].sortOrder) || 1;
@@ -124,6 +126,7 @@ export default {
       launchTrack: 'tracks/launchTrack',
       searchTrack: 'tracks/searchTrack',
       removeTracksFromList: 'tracks/removeTracksFromList',
+      loadColumns: 'columns/loadColumns',
     }),
     removeTracks(event) {
       if (!(event.metaKey && event.keyCode === 8)) {
@@ -183,7 +186,7 @@ export default {
     },
     sortBy(key) {
       this.sortKey = key;
-      this.columns[key].sortOrder *= -1;
+      this.column.sortOrder *= -1;
     },
   },
 };

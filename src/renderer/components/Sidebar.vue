@@ -154,8 +154,8 @@ export default {
 
   .sidebar {
     position: fixed;
-    min-width: 250px;
-    max-width: 250px;
+    min-width: $readerWidth;
+    max-width: $readerWidth;
     min-height: 100vh;
     padding: 20px;
     background-color: $black;

@@ -21,14 +21,19 @@
 - [x] Close modal when done
 - [x] Reset tags that are not used anymore
 - [x] Delete useless comments
-- [ ] Remove a track from a tag list
-- [ ] Scroller for tracks
+- [x] Remove a track from a tag list
+- [x] Move columns config in backend
+- [ ] Resize columns
+- [ ] Let the user add / remove columns
+- [x] Scroller for tracks
 - [ ] Modal text when no old tag found
 - [ ] Apply all tags not applied yet?
 - [ ] Analyze genres?
-- [ ] Resize columns
 - [ ] Open file in folder
 - [ ] Better icons
 - [ ] Show total time + remaining
 - [ ] Loaders and notifs
 - [ ] Limit state history size
+- [ ] Tests
+- [ ] How to handle files
+- [ ] Clean track names

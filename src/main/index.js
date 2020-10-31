@@ -42,6 +42,22 @@ tracks.forEach((t) => {
 });
 store.set({ tracks, tags });
 
+const columns = [
+  {
+    id: 'name', size: 450, revColOrder: 3, sortOrder: 1, trad: 'name', visible: true,
+  },
+  {
+    id: 'genre', size: 150, revColOrder: 2, sortOrder: 1, trad: 'genre', visible: true,
+  },
+  {
+    id: 'shortComment', size: null, revColOrder: 1, sortOrder: 1, trad: 'comment', visible: true,
+  },
+  {
+    id: 'createdAt', size: null, revColOrder: null, sortOrder: 1, trad: 'added_at', visible: false,
+  },
+];
+store.set({ columns });
+
 const autoId = (() => {
   let seed = store.get('seed') || 0;
   return () => {
@@ -421,8 +437,13 @@ ipcMain.on('tracks:remove', (event, { trackIds, tag }) => {
     });
     remainingTracks = remainingTracks.concat(removedTracks);
   }
-  store.set('tracks', remainingTracks);
+  store.set({ tracks: remainingTracks });
   mainWindow.webContents.send('tracks:loaded', remainingTracks);
+});
+
+ipcMain.on('columns:load', () => {
+  const columns = store.get('columns').filter(c => c.visible);
+  mainWindow.webContents.send('columns:loaded', columns);
 });
 
 const menuTemplate = [

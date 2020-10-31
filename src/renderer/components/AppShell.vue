@@ -24,11 +24,13 @@ export default {
 </script>
 
 <style scoped lang="scss">
+  @import 'styles/_vars.scss';
+
   .wrapper {
     display: flex;
     flex-direction: column;
     width: 100%;
     align-items: stretch;
-    padding-left: 250px;
+    padding-left: $readerWidth;
   }
 </style>

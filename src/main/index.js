@@ -42,7 +42,7 @@ tracks.forEach((t) => {
 });
 store.set({ tracks, tags });
 
-const columns = [
+const columns = store.get('columns') || [
   {
     id: 'name', size: 450, revColOrder: 3, sortOrder: 1, trad: 'name', visible: true,
   },
@@ -453,6 +453,11 @@ ipcMain.on('columns:invert_order', (event, columnId) => {
       c.sortOrder *= -1;
     }
   });
+  store.set({ columns });
+  mainWindow.webContents.send('columns:loaded', columns.filter(c => c.visible));
+});
+
+ipcMain.on('columns:update', (event, { columns }) => {
   store.set({ columns });
   mainWindow.webContents.send('columns:loaded', columns.filter(c => c.visible));
 });

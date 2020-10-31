@@ -11,11 +11,12 @@
       ></b-form-input>
     </div>
     <table>
-      <thead>
+      <thead id="tracks-header">
         <tr>
           <th
             v-for="column in orderedColumns"
             v-bind:key="column.id"
+            v-bind:id="column.id"
             @click="sortBy(column.id)"
             :class="{ active: sortKey == column.id }"
             :style="{
@@ -24,6 +25,7 @@
             }"
           >
             {{ column.trad | capitalize }}
+            <div class="resize" @mousedown="event => startResizing(event)"></div>
             <span class="arrow" :class="column.sortOrder > 0 ? 'asc' : 'dsc'">
             </span>
           </th>
@@ -80,6 +82,10 @@ export default {
       sortKey: '',
       winHeight: window.innerHeight,
       winWidth: window.innerWidth,
+      startX: null,
+      endX: null,
+      diffX: null,
+      columnId: null,
     };
   },
   mounted() {
@@ -92,13 +98,15 @@ export default {
       this.winWidth = window.innerWidth;
       this.loadColumns(window.innerWidth - 250);
     });
+    document.addEventListener('mousemove', this.onMouseMove);
+    document.addEventListener('mouseup', this.onMouseUp);
   },
   computed: {
     ...mapState('tracks', ['tracks']),
     ...mapState('tags', ['currentTag']),
     ...mapState('columns', ['columns']),
     orderedColumns() {
-      return [...this.columns].sort((a, b) => (a.revColOrder < b.revColOrder ? -1 : 1));
+      return [...this.columns].sort((a, b) => (a.revColOrder > b.revColOrder ? -1 : 1));
     },
     orderedTracks() {
       const { sortKey, columns, tracks } = this;
@@ -132,6 +140,8 @@ export default {
       removeTracksFromList: 'tracks/removeTracksFromList',
       loadColumns: 'columns/loadColumns',
       invertOrder: 'columns/invertOrder',
+      updateColumnSize: 'columns/updateColumnSize',
+      saveColumnSize: 'columns/saveColumnSize',
     }),
     removeTracks(event) {
       if (!(event.metaKey && event.keyCode === 8)) {
@@ -195,6 +205,27 @@ export default {
         this.invertOrder(columnToUpdate.id);
       }
       this.sortKey = key;
+    },
+    onMouseMove(e) {
+      if (!this.startX) {
+        return;
+      }
+      this.endX = e.pageX;
+      this.diffX = this.endX - this.startX;
+      this.updateColumnSize({ columnId: this.columnId, diffX: this.diffX });
+      this.startX = this.endX;
+    },
+    onMouseUp() {
+      this.saveColumnSize({ columns: this.columns });
+      this.startX = null;
+      this.endX = null;
+      this.diffX = null;
+    },
+    startResizing(event) {
+      event.preventDefault();
+      event.stopPropagation();
+      this.startX = event.pageX;
+      this.columnId = event.target.parentNode.id;
     },
   },
 };
@@ -275,6 +306,17 @@ export default {
 
   th {
     opacity: 0.66;
+    position: relative;
+    .resize {
+      width: 5px;
+      right: 0px;
+      top: 0px;
+      height: 100%;
+      position:absolute;
+      background: blue;
+      user-select: none;
+      cursor: col-resize;
+    }
   }
 
   th.active {

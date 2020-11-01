@@ -84,6 +84,7 @@ export default {
       sortKey: '',
       winHeight: window.innerHeight,
       winWidth: window.innerWidth,
+      resizing: false,
       startX: null,
       endX: null,
       diffX: null,
@@ -101,8 +102,8 @@ export default {
       this.winWidth = window.innerWidth;
       this.loadColumns(window.innerWidth - 250);
     });
-    document.addEventListener('mousemove', this.onMouseMove);
-    document.addEventListener('mouseup', this.onMouseUp);
+    window.document.addEventListener('mousemove', this.onMouseMove);
+    window.document.addEventListener('mouseup', this.onMouseUp);
   },
   computed: {
     ...mapState('tracks', ['tracks']),
@@ -223,12 +224,15 @@ export default {
         });
 
         window.document.getElementById('tracks-header').addEventListener('contextmenu', () => {
-          // e.preventDefault();
           menu.popup(remote.getCurrentWindow());
         }, false);
       });
     },
     sortBy(key) {
+      if (this.resizing) {
+        this.resizing = false;
+        return;
+      }
       if (this.sortKey === key) {
         const columnToUpdate = this.columns.find(c => c.id === key);
         this.invertOrder(columnToUpdate.id);
@@ -251,6 +255,7 @@ export default {
       this.diffX = null;
     },
     startResizing(event) {
+      this.resizing = true;
       event.preventDefault();
       event.stopPropagation();
       this.startX = event.pageX;

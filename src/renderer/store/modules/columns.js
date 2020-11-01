@@ -15,7 +15,9 @@ const mutations = {
     const resizedColumn = state.columns.find(c => c.id === payload.columnId);
     const isLastColumn = resizedColumn.revColOrder === 1;
     const otherColumnImpacted = state.columns
-      .find(c => (c.revColOrder === resizedColumn.revColOrder + (isLastColumn ? 1 : -1)));
+      .find(c => (
+        c.visible &&
+        c.revColOrder === resizedColumn.revColOrder + (isLastColumn ? 1 : -1)));
     const oldColumns = state.columns
       .filter(c => (c.id !== payload.columnId && c.id !== otherColumnImpacted.id));
 
@@ -54,7 +56,7 @@ const actions = {
     commit({ type: 'UPDATE_COLUMN_SIZE', columnId, diffX });
   },
   saveColumnSize({ commit }, { columns }) {
-    ipcRenderer.send('columns:update', { columns });
+    ipcRenderer.send('columns:update_size', { columns });
     ipcRenderer.on('columns:loaded', (event, columns) => {
       commit({ type: 'LOAD_COLUMNS', columns });
       ipcRenderer.removeAllListeners('columns:loaded');

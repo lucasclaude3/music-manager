@@ -504,14 +504,18 @@ ipcMain.on('column:toggle_visibility', (event, { columnId, windowWidth }) => {
           .reduce((acc, s) => acc + s);
     }
   });
-  console.log(columns);
   store.set({ columns });
   mainWindow.webContents.send('columns:loaded', columns);
 });
 
-ipcMain.on('columns:update', (event, { columns }) => {
-  store.set({ columns });
-  mainWindow.webContents.send('columns:loaded', columns);
+ipcMain.on('columns:update_size', (event, { columns }) => {
+  const columnsToUpdate = store.get('columns');
+  columnsToUpdate.forEach((c) => {
+    const newColumn = columns.find(col => col.id === c.id);
+    c.size = newColumn.size;
+  });
+  store.set({ columnsToUpdate });
+  mainWindow.webContents.send('columns:loaded', columnsToUpdate);
 });
 
 const menuTemplate = [

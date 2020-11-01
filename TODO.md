@@ -23,8 +23,10 @@
 - [x] Delete useless comments
 - [x] Remove a track from a tag list
 - [x] Move columns config in backend
-- [x] Resize columns
-- [ ] Let the user add / remove columns
+- [x] Resize columnss
+- [x] Let the user add / remove columns
+- [ ] Modify column order
+- [ ] Fix order by desc / asc
 - [x] Scroller for tracks
 - [ ] Modal text when no old tag found
 - [ ] Apply all tags not applied yet?

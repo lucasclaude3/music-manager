@@ -50,10 +50,10 @@ const columns = store.get('columns') || [
     id: 'genre', size: 150, revColOrder: 2, sortOrder: 1, trad: 'genre', visible: true,
   },
   {
-    id: 'shortComment', size: null, revColOrder: 1, sortOrder: 1, trad: 'comment', visible: true,
+    id: 'shortComment', size: 250, revColOrder: 1, sortOrder: 1, trad: 'comment', visible: true,
   },
   {
-    id: 'createdAt', size: null, revColOrder: null, sortOrder: 1, trad: 'added_at', visible: false,
+    id: 'created_at', size: 100, revColOrder: 0, sortOrder: 1, trad: 'added_at', visible: false,
   },
 ];
 store.set({ columns });
@@ -441,8 +441,17 @@ ipcMain.on('tracks:remove', (event, { trackIds, tag }) => {
   mainWindow.webContents.send('tracks:loaded', remainingTracks);
 });
 
-ipcMain.on('columns:load', () => {
-  const columns = store.get('columns').filter(c => c.visible);
+ipcMain.on('columns:load', (event, windowWidth) => {
+  const columns = store.get('columns');
+  columns.forEach((c) => {
+    if (c.revColOrder === 1) {
+      c.size = windowWidth
+        - columns
+          .map(col => (col.revColOrder > 1 && col.visible ? col.size : 0))
+          .reduce((acc, s) => acc + s);
+    }
+  });
+  store.set({ columns });
   mainWindow.webContents.send('columns:loaded', columns);
 });
 
@@ -451,7 +460,7 @@ ipcMain.on('columns:load_all', () => {
   mainWindow.webContents.send('columns:loaded_all', columns);
 });
 
-ipcMain.on('columns:invert_order', (event, columnId) => {
+ipcMain.on('column:invert_order', (event, columnId) => {
   const columns = store.get('columns');
   columns.forEach((c) => {
     if (c.id === columnId) {
@@ -459,12 +468,50 @@ ipcMain.on('columns:invert_order', (event, columnId) => {
     }
   });
   store.set({ columns });
-  mainWindow.webContents.send('columns:loaded', columns.filter(c => c.visible));
+  mainWindow.webContents.send('columns:loaded', columns);
+});
+
+ipcMain.on('column:toggle_visibility', (event, { columnId, windowWidth }) => {
+  const columns = store.get('columns');
+  const column = { ...columns.find(c => c.id === columnId) };
+  const totalSize = columns
+    .filter(c => c.visible)
+    .reduce((acc, s) => acc + s.size, 0);
+  const countVisibleColumns = columns
+    .filter(c => c.visible)
+    .length;
+  columns.forEach((c) => {
+    if (c.id === columnId) {
+      c.visible = !column.visible;
+      c.revColOrder = 1;
+      c.size = 100;
+    } else if (!column.visible) {
+      c.revColOrder += 1;
+      c.size -= 100 *
+        ((c.size - 100) / ((totalSize - (100 * countVisibleColumns))));
+    } else {
+      if (c.revColOrder > column.revColOrder) {
+        c.revColOrder -= 1;
+      }
+      c.size += (column.size * (c.size / (totalSize - column.size)));
+    }
+  });
+  columns.forEach((c) => {
+    if (c.revColOrder === 1) {
+      c.size = windowWidth
+        - columns
+          .map(col => (col.revColOrder > 1 && col.visible ? col.size : 0))
+          .reduce((acc, s) => acc + s);
+    }
+  });
+  console.log(columns);
+  store.set({ columns });
+  mainWindow.webContents.send('columns:loaded', columns);
 });
 
 ipcMain.on('columns:update', (event, { columns }) => {
   store.set({ columns });
-  mainWindow.webContents.send('columns:loaded', columns.filter(c => c.visible));
+  mainWindow.webContents.send('columns:loaded', columns);
 });
 
 const menuTemplate = [

@@ -24,7 +24,7 @@
               'min-width': `${column.size}px`
             }"
           >
-            {{ column.trad | capitalize }}
+            {{ capitalize(column.trad) }}
             <div class="resize" @mousedown="event => startResizing(event)"></div>
             <span class="arrow" :class="column.sortOrder > 0 ? 'asc' : 'dsc'">
             </span>
@@ -109,7 +109,9 @@ export default {
     ...mapState('tags', ['currentTag']),
     ...mapState('columns', ['columns']),
     orderedColumns() {
-      return [...this.columns].sort((a, b) => (a.revColOrder > b.revColOrder ? -1 : 1));
+      return [...this.columns]
+        .filter(c => c.visible)
+        .sort((a, b) => (a.revColOrder > b.revColOrder ? -1 : 1));
     },
     orderedTracks() {
       const { sortKey, columns, tracks } = this;
@@ -130,9 +132,6 @@ export default {
       return tmpTracks;
     },
   },
-  filters: {
-    capitalize: str => str.charAt(0).toUpperCase() + str.slice(1),
-  },
   methods: {
     ...mapActions({
       loadTracks: 'tracks/loadTracks',
@@ -145,7 +144,11 @@ export default {
       invertOrder: 'columns/invertOrder',
       updateColumnSize: 'columns/updateColumnSize',
       saveColumnSize: 'columns/saveColumnSize',
+      toggleColumnVisibility: 'columns/toggleColumnVisibility',
     }),
+    capitalize(str) {
+      return str.charAt(0).toUpperCase() + str.slice(1);
+    },
     removeTracks(event) {
       if (!(event.metaKey && event.keyCode === 8)) {
         return;
@@ -203,18 +206,23 @@ export default {
       }
     },
     loadContextMenu() {
+      const vm = this;
       ipcRenderer.send('columns:load_all');
       ipcRenderer.on('columns:loaded_all', (event, columns) => {
         ipcRenderer.removeAllListeners('columns:loaded_all');
         const menu = new Menu();
         columns.forEach((c) => {
-          console.log(c);
-          menu.append(new MenuItem({ label: c.trad, type: 'checkbox', checked: true }));
+          menu.append(new MenuItem({
+            label: this.capitalize(c.trad),
+            type: 'checkbox',
+            checked: c.visible,
+            click() {
+              vm.toggleColumnVisibility({ columnId: c.id, windowWidth: (window.innerWidth - 250) });
+            },
+          }));
         });
 
-        // Prevent default action of right click in chromium. Replace with our menu.
-        window.document.getElementById('tracks-header').addEventListener('contextmenu', (e) => {
-          console.log(e);
+        window.document.getElementById('tracks-header').addEventListener('contextmenu', () => {
           // e.preventDefault();
           menu.popup(remote.getCurrentWindow());
         }, false);

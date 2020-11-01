@@ -25,8 +25,8 @@
 - [x] Move columns config in backend
 - [x] Resize columnss
 - [x] Let the user add / remove columns
-- [ ] Modify column order
-- [ ] Fix order by desc / asc
+- [x] Modify column order
+- [x] Fix order by desc / asc
 - [x] Scroller for tracks
 - [ ] Modal text when no old tag found
 - [ ] Apply all tags not applied yet?

@@ -69,6 +69,13 @@ const actions = {
       ipcRenderer.removeAllListeners('columns:loaded');
     });
   },
+  updateColumnOrder({ commit }, { columnId, newRevColOrder, before }) {
+    ipcRenderer.send('column:update_order', { columnId, newRevColOrder, before });
+    ipcRenderer.on('columns:loaded', (event, columns) => {
+      commit({ type: 'LOAD_COLUMNS', columns });
+      ipcRenderer.removeAllListeners('columns:loaded');
+    });
+  },
 };
 
 export default {

@@ -42,7 +42,7 @@ tracks.forEach((t) => {
 });
 store.set({ tracks, tags });
 
-const columns = store.get('columns') || [
+const columns = [
   {
     id: 'name', size: 450, revColOrder: 3, sortOrder: 1, trad: 'name', visible: true,
   },
@@ -487,13 +487,13 @@ ipcMain.on('column:toggle_visibility', (event, { columnId, windowWidth }) => {
       c.size = 100;
     } else if (!column.visible) {
       c.revColOrder += 1;
-      c.size -= 100 *
-        ((c.size - 100) / ((totalSize - (100 * countVisibleColumns))));
+      c.size = Math.floor(c.size - (100 *
+        ((c.size - 100) / ((totalSize - (100 * countVisibleColumns))))));
     } else {
       if (c.revColOrder > column.revColOrder) {
         c.revColOrder -= 1;
       }
-      c.size += (column.size * (c.size / (totalSize - column.size)));
+      c.size = Math.floor(c.size + (column.size * (c.size / (totalSize - column.size))));
     }
   });
   columns.forEach((c) => {
@@ -514,7 +514,30 @@ ipcMain.on('columns:update_size', (event, { columns }) => {
     const newColumn = columns.find(col => col.id === c.id);
     c.size = newColumn.size;
   });
-  store.set({ columnsToUpdate });
+  store.set({ columns: columnsToUpdate });
+  mainWindow.webContents.send('columns:loaded', columnsToUpdate);
+});
+
+ipcMain.on('column:update_order', (event, { columnId, newRevColOrder, before }) => {
+  const columnsToUpdate = store.get('columns');
+  const column = [...columnsToUpdate].find(c => c.id === columnId);
+  if (column.revColOrder < newRevColOrder) {
+    newRevColOrder -= 1;
+  }
+  if (before) {
+    newRevColOrder += 1;
+  }
+  columnsToUpdate.forEach((c) => {
+    if (c.id === columnId) {
+      c.revColOrder = newRevColOrder;
+    } else if (c.revColOrder >= Math.min(column.revColOrder, newRevColOrder)
+        && c.revColOrder <= Math.max(column.revColOrder, newRevColOrder)) {
+      c.revColOrder += (column.revColOrder - newRevColOrder < 0 ? -1 : 1);
+      const newColumn = columns.find(col => col.id === c.id);
+      c.size = newColumn.size;
+    }
+  });
+  store.set({ columns: columnsToUpdate });
   mainWindow.webContents.send('columns:loaded', columnsToUpdate);
 });
 

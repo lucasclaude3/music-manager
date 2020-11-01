@@ -18,14 +18,30 @@
             v-bind:key="column.id"
             v-bind:id="column.id"
             @click="sortBy(column.id)"
-            :class="{ active: sortKey == column.id }"
+            draggable="true"
+            @dragstart="handleDragColumn"
+            @drop="handleDropColumn"
+            :class="{ active: sortKey == column.id, selected: selectedColumnId == column.id }"
             :style="{
               'max-width': `${column.size}px`,
               'min-width': `${column.size}px`
             }"
           >
-            {{ capitalize(column.trad) }}
-            <div class="resize" @mousedown="event => startResizing(event)"></div>
+            <div
+              class="resize"
+              @mousedown="event => startResizing(event)"
+            ></div>
+            <div
+              class="reorder reorder-before"
+              @dragover="handleDragColumnover"
+              @dragleave="handleDragLeave"
+            ></div>
+            <div
+              class="reorder reorder-after"
+              @dragover="handleDragColumnover"
+              @dragleave="handleDragLeave"
+            ></div>
+            <span class="column-name">{{ capitalize(column.trad) }}</span>
             <span class="arrow" :class="column.sortOrder > 0 ? 'asc' : 'dsc'">
             </span>
           </th>
@@ -89,6 +105,7 @@ export default {
       endX: null,
       diffX: null,
       columnId: null,
+      selectedColumnId: null,
     };
   },
   mounted() {
@@ -146,6 +163,7 @@ export default {
       updateColumnSize: 'columns/updateColumnSize',
       saveColumnSize: 'columns/saveColumnSize',
       toggleColumnVisibility: 'columns/toggleColumnVisibility',
+      updateColumnOrder: 'columns/updateColumnOrder',
     }),
     capitalize(str) {
       return str.charAt(0).toUpperCase() + str.slice(1);
@@ -176,6 +194,34 @@ export default {
       event
         .dataTransfer
         .setData('text/plain', selectedTracks);
+    },
+    handleDragColumn(event) {
+      if (this.selectedColumnId === null) {
+        this.selectedColumnId = event.target.id;
+      }
+      event
+        .dataTransfer
+        .setData('text/plain', event.target.id);
+    },
+    handleDragColumnover(event) {
+      event.preventDefault();
+      event.target.classList.add('dragover');
+    },
+    handleDragLeave(event) {
+      event.target.classList.remove('dragover');
+    },
+    handleDropColumn(event) {
+      event.target.classList.remove('dragover');
+      this.selectedColumnId = null;
+      const droppedOn = this.columns.find(c => c.id === event.target.parentNode.id);
+      const columnId = event
+        .dataTransfer
+        .getData('text');
+      this.updateColumnOrder({
+        columnId,
+        newRevColOrder: droppedOn.revColOrder,
+        before: event.target.classList.contains('reorder-before'),
+      });
     },
     onNewChar(event, searchTerms) {
       let searchTermsUpdated;
@@ -341,15 +387,45 @@ export default {
   th {
     opacity: 0.66;
     position: relative;
+
+    .column-name {
+      user-select: none;
+    }
+
     .resize {
       width: 5px;
       right: 0px;
       top: 0px;
       height: 100%;
       position:absolute;
-      background: blue;
       user-select: none;
       cursor: col-resize;
+      &:hover {
+        background-color: rgba($mainColor, 0.5);
+      }
+    }
+
+    .reorder {
+      width: 20px;
+      top: 0px;
+      height: 100%;
+      position: absolute;
+      z-index: 1;
+
+      &.reorder-before {
+        left: 0px;
+      }
+      &.reorder-after {
+        right: 0px;
+      }
+    }
+
+    .dragover {
+      background-color: rgba($mainColor, 0.5);
+    }
+
+    &.selected {
+      background-color: rgba($mainColor, 0.5);
     }
   }
 

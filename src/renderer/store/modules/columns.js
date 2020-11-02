@@ -69,8 +69,11 @@ const actions = {
       ipcRenderer.removeAllListeners('columns:loaded');
     });
   },
-  updateColumnOrder({ commit }, { columnId, newRevColOrder, before }) {
-    ipcRenderer.send('column:update_order', { columnId, newRevColOrder, before });
+  updateColumnOrder({ commit }, { movedColumn, droppedOn, before }) {
+    if (movedColumn.revColOrder === droppedOn.revColOrder) {
+      return;
+    }
+    ipcRenderer.send('column:update_order', { movedColumn, droppedOn, before });
     ipcRenderer.on('columns:loaded', (event, columns) => {
       commit({ type: 'LOAD_COLUMNS', columns });
       ipcRenderer.removeAllListeners('columns:loaded');

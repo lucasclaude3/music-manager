@@ -518,23 +518,22 @@ ipcMain.on('columns:update_size', (event, { columns }) => {
   mainWindow.webContents.send('columns:loaded', columnsToUpdate);
 });
 
-ipcMain.on('column:update_order', (event, { columnId, newRevColOrder, before }) => {
-  const columnsToUpdate = store.get('columns');
-  const column = [...columnsToUpdate].find(c => c.id === columnId);
-  if (column.revColOrder < newRevColOrder) {
+ipcMain.on('column:update_order', (event, { movedColumn, droppedOn, before }) => {
+  const columnsToUpdate = store.get('columns').sort();
+  let newRevColOrder = droppedOn.revColOrder;
+  const isDescending = (newRevColOrder - movedColumn.revColOrder) > 0;
+  if (isDescending) {
     newRevColOrder -= 1;
   }
   if (before) {
     newRevColOrder += 1;
   }
   columnsToUpdate.forEach((c) => {
-    if (c.id === columnId) {
+    if (c.id === movedColumn.id) {
       c.revColOrder = newRevColOrder;
-    } else if (c.revColOrder >= Math.min(column.revColOrder, newRevColOrder)
-        && c.revColOrder <= Math.max(column.revColOrder, newRevColOrder)) {
-      c.revColOrder += (column.revColOrder - newRevColOrder < 0 ? -1 : 1);
-      const newColumn = columns.find(col => col.id === c.id);
-      c.size = newColumn.size;
+    } else if (c.revColOrder >= Math.min(movedColumn.revColOrder, newRevColOrder)
+        && c.revColOrder <= Math.max(movedColumn.revColOrder, newRevColOrder)) {
+      c.revColOrder += (isDescending ? -1 : 1);
     }
   });
   store.set({ columns: columnsToUpdate });

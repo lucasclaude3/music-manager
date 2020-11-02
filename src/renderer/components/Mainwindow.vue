@@ -218,8 +218,8 @@ export default {
         .dataTransfer
         .getData('text');
       this.updateColumnOrder({
-        columnId,
-        newRevColOrder: droppedOn.revColOrder,
+        movedColumn: this.columns.find(c => c.id === columnId),
+        droppedOn,
         before: event.target.classList.contains('reorder-before'),
       });
     },
@@ -406,22 +406,26 @@ export default {
     }
 
     .reorder {
-      width: 20px;
+      width: 30px;
       top: 0px;
       height: 100%;
       position: absolute;
-      z-index: 1;
+      z-index: -1;
 
       &.reorder-before {
         left: 0px;
+        &.dragover {
+          border-left: 1px solid rgba($mainColor, 0.5);
+          z-index: 10;
+        }
       }
       &.reorder-after {
         right: 0px;
+        &.dragover {
+          border-right: 1px solid rgba($mainColor, 0.5);
+          z-index: 10;
+        }
       }
-    }
-
-    .dragover {
-      background-color: rgba($mainColor, 0.5);
     }
 
     &.selected {

@@ -85,16 +85,22 @@
         </tr>
       </tbody>
     </table>
+    <FlatteningFolderProgressModal />
   </div>
 </template>
 
 <script>
 import { mapState, mapActions } from 'vuex';
 import { remote, ipcRenderer, shell } from 'electron';
+import FlatteningFolderProgressModal from './FlatteningFolderProgressModal';
+
 const { Menu, MenuItem } = remote;
 
 export default {
   name: 'MainWindow',
+  components: {
+    FlatteningFolderProgressModal,
+  },
   data() {
     return {
       searchTerms: '',
@@ -126,6 +132,7 @@ export default {
     });
     window.document.addEventListener('mousemove', this.onMouseMove);
     window.document.addEventListener('mouseup', this.onMouseUp);
+    this.watchFolderFlattening();
   },
   computed: {
     ...mapState('tracks', ['tracks']),
@@ -169,6 +176,8 @@ export default {
       saveColumnSize: 'columns/saveColumnSize',
       toggleColumnVisibility: 'columns/toggleColumnVisibility',
       updateColumnOrder: 'columns/updateColumnOrder',
+      updateFlatteningStatus: 'files/updateFlatteningStatus',
+      updateCopiedFilesCount: 'files/updateCopiedFilesCount',
     }),
     capitalize(str) {
       return str.charAt(0).toUpperCase() + str.slice(1);
@@ -331,6 +340,18 @@ export default {
       event.stopPropagation();
       this.startX = event.pageX;
       this.columnId = event.target.parentNode.id;
+    },
+    watchFolderFlattening() {
+      ipcRenderer.on('folder:start_flattening', () => {
+        this.updateFlatteningStatus({ flattening: true });
+        this.$modal.show('flattening-folder-progress-modal');
+      });
+      ipcRenderer.on('file:copied', (event, { countFiles, countCopiedFiles }) => {
+        this.updateCopiedFilesCount({ countFiles, countCopiedFiles });
+      });
+      ipcRenderer.on('folder:flattened', () => {
+        this.updateFlatteningStatus({ flattening: false });
+      });
     },
   },
 };

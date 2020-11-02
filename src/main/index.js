@@ -29,7 +29,7 @@ const writeMetadata = (filepath, tags) =>
 
 const readDir = Promise.promisify(fs.readdir);
 const stat = Promise.promisify(fs.stat);
-const moveFile = Promise.promisify(fs.rename);
+const copyFile = Promise.promisify(fs.copyFile);
 
 const store = new Store();
 // store.clear();
@@ -77,14 +77,6 @@ const analyzeDirectory = async (dir) => {
     },
   );
   return files.reduce((a, f) => a.concat(f), []);
-};
-
-const flattenFolder = async (dir) => {
-  const files = await analyzeDirectory(dir);
-  Promise.map(
-    files,
-    async file => moveFile(file, path.join(dir, path.basename(file))),
-  );
 };
 
 const analyzePaths = dirs => Promise
@@ -539,6 +531,44 @@ ipcMain.on('column:update_order', (event, { movedColumn, droppedOn, before }) =>
   store.set({ columns: columnsToUpdate });
   mainWindow.webContents.send('columns:loaded', columnsToUpdate);
 });
+
+
+let flatteningInProgress;
+let countFiles = 0;
+let countCopiedFiles = 0;
+
+const flattenFolder = async (dir) => {
+  if (flatteningInProgress) {
+    throw new Error('Another flattening process is ongoing. Cancelling.');
+  }
+  let timestamp = new Date().toISOString().substring(0, 10);
+  timestamp = timestamp.replace(/./g, char => (char.charCodeAt(0) === 45 ? '' : char));
+  const newDir = `${dir}_${timestamp}`;
+  if (fs.existsSync(newDir)) {
+    throw new Error('Directory already exists. Cancelling.');
+  }
+
+  mainWindow.webContents.send('folder:start_flattening', { dir, newDir });
+  flatteningInProgress = true;
+  const files = await analyzeDirectory(dir);
+  countFiles = files.length;
+  countCopiedFiles = 0;
+
+  fs.mkdirSync(newDir);
+  Promise
+    .map(
+      files,
+      async file => copyFile(file, path.join(newDir, path.basename(file))).then(() => {
+        countCopiedFiles += 1;
+        mainWindow.webContents.send('file:copied', { countFiles, countCopiedFiles });
+        return Promise.resolve();
+      }),
+    )
+    .then(() => {
+      flatteningInProgress = false;
+      mainWindow.webContents.send('folder:flattened', { countFiles });
+    });
+};
 
 const menuTemplate = [
   {

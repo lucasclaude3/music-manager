@@ -3,7 +3,9 @@
     name="tags-analysis-modal"
     id="tags-analysis-modal"
     @before-open="beforeOpen"
-    @opened="opened">
+    @opened="opened"
+    :clickToClose="false"
+  >
     <div v-if="comments.length === 0" class="nothing-to-do">
       <div class="tags-analysis-header">No previous comments found.</div>
     </div>
@@ -127,11 +129,6 @@ export default {
 
 <style lang="scss">
   @import 'styles/_vars.scss';
-
-  .vm--modal {
-    background-color: $moreBlack;
-    padding: 20px 30px;
-  }
 
   .strike {
     text-decoration: line-through;

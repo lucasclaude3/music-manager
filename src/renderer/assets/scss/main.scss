@@ -5,15 +5,20 @@
 @import '~bootstrap-vue';
 
 :focus {
-    box-shadow: 0 0 0 0.1rem rgba($mainColor, 0.2);
-    outline: none;
+  box-shadow: 0 0 0 0.1rem rgba($mainColor, 0.2);
+  outline: none;
 }
 
 button.btn.btn-secondary {
-    margin-bottom: 6px;
-    color: $mainColor;
-    background-color: $moreBlack;
-    font-size: 16px;
-    line-height: 16px;
-    display: block;
-  }
+  margin-bottom: 6px;
+  color: $mainColor;
+  background-color: $moreBlack;
+  font-size: 16px;
+  line-height: 16px;
+  display: block;
+}
+
+.vm--modal {
+  background-color: $moreBlack;
+  padding: 20px 30px;
+}

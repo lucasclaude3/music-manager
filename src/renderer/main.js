@@ -12,7 +12,7 @@ import store from './store';
 if (!process.env.IS_WEB) Vue.use(require('vue-electron'));
 Vue.use(BootstrapVue);
 Vue.use(VueSVGIcon);
-Vue.use(VModal, { clickToClose: false });
+Vue.use(VModal);
 
 Vue.http = Vue.prototype.$http = axios;
 Vue.config.productionTip = false;

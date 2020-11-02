@@ -56,8 +56,9 @@
         <tr
           class="track"
           v-for="track in orderedTracks"
-          v-bind:key="track.id"
-          v-bind:id="track.index"
+          :key="track.id"
+          :id="track.index"
+          :data-id="track.id"
           tabindex="0"
           draggable="true"
           @dragstart="handleDragTrack"
@@ -65,6 +66,7 @@
           @click.exact="handleFocus"
           @click.shift="handleFocusShift"
           @blur="handleBlur"
+          @contextmenu="openTracksContextMenu"
           :class="{ selected: firstSelectedElement
                            && track.index >= parseInt(firstSelectedElement.id, 10)
                            && track.index <= parseInt(secondSelectedElement.id, 10) }"
@@ -88,7 +90,7 @@
 
 <script>
 import { mapState, mapActions } from 'vuex';
-import { remote, ipcRenderer } from 'electron';
+import { remote, ipcRenderer, shell } from 'electron';
 const { Menu, MenuItem } = remote;
 
 export default {
@@ -107,12 +109,14 @@ export default {
       diffX: null,
       columnId: null,
       selectedColumnId: null,
+      tracksContextMenu: null,
     };
   },
   mounted() {
-    this.loadContextMenu();
+    this.loadColumnsContextMenu();
     this.loadColumns(window.innerWidth - 250);
     this.loadTracks();
+    this.loadTracksContextMenu();
     this.watchTrackAddition();
     this.watchTrackModification();
     window.addEventListener('resize', () => {
@@ -255,7 +259,7 @@ export default {
         this.secondSelectedElement = null;
       }
     },
-    loadContextMenu() {
+    loadColumnsContextMenu() {
       const vm = this;
       ipcRenderer.send('columns:load_all');
       ipcRenderer.on('columns:loaded_all', (event, columns) => {
@@ -276,6 +280,24 @@ export default {
           menu.popup(remote.getCurrentWindow());
         }, false);
       });
+    },
+    loadTracksContextMenu() {
+      const vm = this;
+      this.tracksContextMenu = new Menu();
+      this.tracksContextMenu.append(new MenuItem({
+        label: 'Open file in folder',
+        click() {
+          const trackId = parseInt(vm.firstSelectedElement.getAttribute('data-id'), 10);
+          const track = vm.tracks.find(t => t.id === trackId);
+          const url = track.path;
+          shell.openItem(url.substring(0, url.lastIndexOf('/')));
+        },
+      }));
+    },
+    openTracksContextMenu(event) {
+      this.firstSelectedElement = event.target;
+      this.secondSelectedElement = event.target;
+      this.tracksContextMenu.popup(remote.getCurrentWindow());
     },
     sortBy(key) {
       if (this.resizing) {

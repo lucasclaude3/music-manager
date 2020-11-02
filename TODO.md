@@ -28,10 +28,9 @@
 - [x] Modify column order
 - [x] Fix order by desc / asc
 - [x] Scroller for tracks
-- [ ] Modal text when no old tag found
-- [ ] Apply all tags not applied yet?
+- [x] Modal text when no old tag found
 - [ ] Analyze genres?
-- [ ] Open file in folder
+- [x] Open file in folder
 - [ ] Better icons
 - [ ] Show total time + remaining
 - [ ] Loaders and notifs

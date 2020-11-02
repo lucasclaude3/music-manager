@@ -4,53 +4,64 @@
     id="tags-analysis-modal"
     @before-open="beforeOpen"
     @opened="opened">
-    <ul>
-      <li
-        v-for="comment in comments"
-        v-bind:key="comment.originalComment">
-        <span>
-          <span :class="{ strike: !comment.selected }">
-            {{ comment.originalComment }}
-          </span>
-          <span v-show="comment.hasBeenModified && comment.selected">
-            <span> >> </span>
-            <span
-              class="new-tag"
-              v-bind:id="comment.originalComment"
-              @keydown="event => onEnter(event, comment)"
-            >
-              {{ comment.modifiedComment }}
+    <div v-if="comments.length === 0" class="nothing-to-do">
+      <div class="tags-analysis-header">No previous comments found.</div>
+    </div>
+    <div v-if="comments.length > 0">
+      <div class="tags-analysis-header">Previous comments found:</div>
+      <ul>
+        <li
+          v-for="comment in comments"
+          v-bind:key="comment.originalComment">
+          <span>
+            <span :class="{ strike: !comment.selected }">
+              {{ comment.originalComment }}
+            </span>
+            <span v-show="comment.hasBeenModified && comment.selected">
+              <span> >> </span>
+              <span
+                class="new-tag"
+                v-bind:id="comment.originalComment"
+                @keydown="event => onEnter(event, comment)"
+              >
+                {{ comment.modifiedComment }}
+              </span>
             </span>
           </span>
-        </span>
-        <svgicon
-          class="modal-icon"
-          @click="() => editComment(comment)"
-          icon="edit"
-          width="22"
-          height="18"
-        ></svgicon>
-        <svgicon
-          class="modal-icon"
-          @click="() => toggleRemoveComment(comment)"
-          v-if="comment.selected"
-          icon="rubbish-can"
-          width="22"
-          height="18"
-        ></svgicon>
-        <svgicon
-          class="modal-icon"
-          @click="() => toggleRemoveComment(comment)"
-          v-if="!comment.selected"
-          icon="undo"
-          width="22"
-          height="18"
-        ></svgicon>
-      </li>
-    </ul>
+          <svgicon
+            class="modal-icon"
+            @click="() => editComment(comment)"
+            icon="edit"
+            width="22"
+            height="18"
+          ></svgicon>
+          <svgicon
+            class="modal-icon"
+            @click="() => toggleRemoveComment(comment)"
+            v-if="comment.selected"
+            icon="rubbish-can"
+            width="22"
+            height="18"
+          ></svgicon>
+          <svgicon
+            class="modal-icon"
+            @click="() => toggleRemoveComment(comment)"
+            v-if="!comment.selected"
+            icon="undo"
+            width="22"
+            height="18"
+          ></svgicon>
+        </li>
+      </ul>
+      <div>
+        <b-button @click="() => applyTags(comments)" type="button">
+          Apply tags
+        </b-button>
+      </div>
+    </div>
     <div>
-      <b-button @click="() => applyTags(comments)" type="button">
-        Apply tags
+      <b-button @click="() => closeModal()" type="button">
+        Close
       </b-button>
     </div>
   </modal>
@@ -107,6 +118,9 @@ export default {
       }
       event.target.blur();
     },
+    closeModal() {
+      this.$modal.hide('tags-analysis-modal');
+    },
   },
 };
 </script>
@@ -132,5 +146,9 @@ export default {
     &:hover {
       color: $mainColor;
     }
+  }
+
+  .tags-analysis-header {
+    margin-bottom: 12px;
   }
 </style>

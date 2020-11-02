@@ -20,6 +20,7 @@
             @click="sortBy(column.id)"
             draggable="true"
             @dragstart="handleDragColumn"
+            @dragend="handleDragEnd"
             @drop="handleDropColumn"
             :class="{ active: sortKey == column.id, selected: selectedColumnId == column.id }"
             :style="{
@@ -210,9 +211,11 @@ export default {
     handleDragLeave(event) {
       event.target.classList.remove('dragover');
     },
+    handleDragEnd() {
+      this.selectedColumnId = null;
+    },
     handleDropColumn(event) {
       event.target.classList.remove('dragover');
-      this.selectedColumnId = null;
       const droppedOn = this.columns.find(c => c.id === event.target.parentNode.id);
       const columnId = event
         .dataTransfer

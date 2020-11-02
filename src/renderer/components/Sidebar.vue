@@ -171,13 +171,4 @@ export default {
   .dragover {
     font-weight: 700;
   }
-
-  button.btn.btn-secondary {
-    margin-bottom: 6px;
-    color: $mainColor;
-    background-color: $moreBlack;
-    font-size: 16px;
-    line-height: 16px;
-    display: block;
-  }
 </style>

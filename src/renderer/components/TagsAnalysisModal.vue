@@ -6,16 +6,16 @@
     @opened="opened"
     :clickToClose="false"
   >
-    <div v-if="comments.length === 0" class="nothing-to-do">
+    <div v-if="comments.length === 0">
       <div class="tags-analysis-header">No previous comments found.</div>
     </div>
     <div v-if="comments.length > 0">
       <div class="tags-analysis-header">Previous comments found:</div>
-      <ul>
-        <li
+      <table class="previous-comments">
+        <tr
           v-for="comment in comments"
           v-bind:key="comment.originalComment">
-          <span>
+          <td>
             <span :class="{ strike: !comment.selected }">
               {{ comment.originalComment }}
             </span>
@@ -29,32 +29,36 @@
                 {{ comment.modifiedComment }}
               </span>
             </span>
-          </span>
-          <svgicon
-            class="modal-icon"
-            @click="() => editComment(comment)"
-            icon="edit"
-            width="22"
-            height="18"
-          ></svgicon>
-          <svgicon
-            class="modal-icon"
-            @click="() => toggleRemoveComment(comment)"
-            v-if="comment.selected"
-            icon="rubbish-can"
-            width="22"
-            height="18"
-          ></svgicon>
-          <svgicon
-            class="modal-icon"
-            @click="() => toggleRemoveComment(comment)"
-            v-if="!comment.selected"
-            icon="undo"
-            width="22"
-            height="18"
-          ></svgicon>
-        </li>
-      </ul>
+          </td>
+          <td>
+            <svgicon
+              class="modal-icon"
+              @click="() => editComment(comment)"
+              icon="edit"
+              width="22"
+              height="18"
+            ></svgicon>
+          </td>
+          <td>
+            <svgicon
+              class="modal-icon"
+              @click="() => toggleRemoveComment(comment)"
+              v-if="comment.selected"
+              icon="rubbish-can"
+              width="22"
+              height="18"
+            ></svgicon>
+            <svgicon
+              class="modal-icon"
+              @click="() => toggleRemoveComment(comment)"
+              v-if="!comment.selected"
+              icon="undo"
+              width="22"
+              height="18"
+            ></svgicon>
+          </td>
+        </tr>
+      </table>
       <div>
         <b-button @click="() => applyTags(comments)" type="button">
           Apply tags
@@ -127,7 +131,7 @@ export default {
 };
 </script>
 
-<style lang="scss">
+<style scoped lang="scss">
   @import 'styles/_vars.scss';
 
   .strike {
@@ -146,6 +150,10 @@ export default {
   }
 
   .tags-analysis-header {
+    margin-bottom: 12px;
+  }
+
+  table.previous-comments {
     margin-bottom: 12px;
   }
 </style>

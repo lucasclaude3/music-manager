@@ -31,7 +31,7 @@
 - [x] Modal text when no old tag found
 - [ ] Analyze genres?
 - [x] Open file in folder
-- [ ] Better icons
+- [x] Better icons
 - [ ] Show total time + remaining
 - [x] Loaders and notifs
 - [ ] Limit state history size

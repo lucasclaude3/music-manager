@@ -9,6 +9,10 @@
       </div>
       <div v-if="!currentTrack" class="track-info-container placeholder"></div>
       <div class="svgs-container">
+        <span
+          v-if="typeof currentTime === 'number'"
+          class="time"
+        >{{ displayTime(currentTime) }}</span>
         <svgicon
           @click="playPreviousSong()"
           icon="fast-forward"
@@ -38,6 +42,11 @@
           width="22"
           height="18"
         ></svgicon>
+        <span
+          v-if="typeof totalTime === 'number'
+            && totalTime > 0"
+          class="time"
+        >{{ displayTime(totalTime) }}</span>
       </div>
       <div @click="handleClick">
         <b-progress
@@ -67,6 +76,8 @@ export default {
     return {
       sound: null,
       isLoaded: false,
+      currentTime: null,
+      totalTime: null,
       currentProgress: 0,
     };
   },
@@ -78,10 +89,14 @@ export default {
     });
     this.$nextTick(() => {
       window.setInterval(() => {
-        this.currentProgress = this.isLoaded
-          ? (100.0 * this.sound.seek()) / this.sound.duration()
-          : 0;
-      }, 200);
+        if (this.isLoaded) {
+          this.currentTime = this.sound.seek();
+          this.totalTime = this.sound.duration();
+          this.currentProgress = 100.0 * (this.currentTime / this.totalTime);
+        } else {
+          this.currentProgress = 0;
+        }
+      }, 100);
     });
   },
   computed: {
@@ -165,6 +180,16 @@ export default {
         this.sound.seek(this.sound.duration() * progressRatio);
       }
     },
+
+    displayTime(time) {
+      const hour = Math.floor(time / 3600);
+      const min = Math.floor((time - (hour * 3600)) / 60);
+      const sec = Math.floor((time - (hour * 3600) - (min * 60)));
+      if (hour > 0) {
+        return `${hour}:${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
+      }
+      return `${min}:${sec.toString().padStart(2, '0')}`;
+    },
   },
 };
 </script>
@@ -204,10 +229,24 @@ export default {
   }
 
   .svgs-container {
-    width: 100px;
+    width: 200px;
     margin: 0 auto;
     text-align: center;
     color: rgba($white, 0.8);
+  }
+
+  .svg-icon {
+    opacity: 0.66;
+    &:hover {
+      opacity: 1;
+    }
+  }
+
+  .time {
+    vertical-align: middle;
+    opacity: 0.4;
+    display: inline-block;
+    width: 40px;
   }
 
   .progress {

@@ -7,6 +7,14 @@ import fs from 'fs';
 import path from 'path';
 import mime from 'mime-type/with-db';
 
+let importInProgress;
+let countFilesToImport = 0;
+let countImportedFiles = 0;
+
+let flatteningInProgress;
+let countFilesToCopy = 0;
+let countCopiedFiles = 0;
+
 const readMetadata = filepath =>
   new Promise((resolve, reject) => {
     NodeID3.read(filepath, (err, tags) => {
@@ -100,6 +108,12 @@ const winURL = process.env.NODE_ENV === 'development'
   : `file://${__dirname}/index.html`;
 
 function createWindow() {
+  importInProgress = false;
+  countFilesToImport = 0;
+  countImportedFiles = 0;
+  flatteningInProgress = false;
+  countFilesToCopy = 0;
+  countCopiedFiles = 0;
   /**
    * Initial window options
    */
@@ -133,6 +147,7 @@ const updateTrack = (trackId, trackFields) => {
 };
 
 const addTracks = (filepaths) => {
+  mainWindow.webContents.send('folder:start_import');
   const oldPaths = store.get('tracks').map(f => f.path);
   const filteredFiles = filepaths
     .filter((filepath) => {
@@ -149,6 +164,20 @@ const addTracks = (filepaths) => {
       tagBag: [],
     }));
 
+  const tracks = store.get('tracks').concat(filteredFiles);
+  store.set({ tracks });
+
+  tracks.forEach((t) => {
+    mainIndex.add(t.id, t.name);
+  });
+  store.set({ mainIndex });
+  mainWindow.webContents.send('tracks:added', filteredFiles);
+
+  // Full import requires metadata computation
+  importInProgress = true;
+  countFilesToImport = filteredFiles.length;
+  countImportedFiles = 0;
+
   Promise.map(
     filteredFiles,
     t => readMetadata(t.path)
@@ -161,23 +190,20 @@ const addTracks = (filepaths) => {
           shortComment: data.comment && parseComment(data.comment.text),
           metadataComment: data.comment && data.comment.text,
         });
+        countImportedFiles += 1;
         mainWindow.webContents.send('track:updated', modifiedTrack);
+        mainWindow.webContents.send('file:imported', { countFilesToImport, countImportedFiles });
         return Promise.resolve();
       })
       .catch((err) => {
+        mainWindow.webContents.send('file:imported', { countFilesToImport, countImportedFiles });
         console.log(err);
       }),
     { concurrency: 5 },
   );
-  const tracks = store.get('tracks').concat(filteredFiles);
-  store.set({ tracks });
-
-  tracks.forEach((t) => {
-    mainIndex.add(t.id, t.name);
+  ipcMain.on('files:imported', () => {
+    importInProgress = false;
   });
-  store.set({ mainIndex });
-
-  mainWindow.webContents.send('tracks:added', filteredFiles);
 };
 
 app.on('ready', createWindow);
@@ -532,11 +558,6 @@ ipcMain.on('column:update_order', (event, { movedColumn, droppedOn, before }) =>
   mainWindow.webContents.send('columns:loaded', columnsToUpdate);
 });
 
-
-let flatteningInProgress;
-let countFiles = 0;
-let countCopiedFiles = 0;
-
 const flattenFolder = async (dir) => {
   let timestamp = new Date().toISOString().substring(0, 10);
   timestamp = timestamp.replace(/./g, char => (char.charCodeAt(0) === 45 ? '' : char));
@@ -552,7 +573,7 @@ const flattenFolder = async (dir) => {
   mainWindow.webContents.send('folder:start_flattening', { dir, newDir });
   flatteningInProgress = true;
   const files = await analyzeDirectory(dir);
-  countFiles = files.length;
+  countFilesToCopy = files.length;
   countCopiedFiles = 0;
 
   fs.mkdirSync(newDir);
@@ -561,7 +582,7 @@ const flattenFolder = async (dir) => {
       files,
       async file => copyFile(file, path.join(newDir, path.basename(file))).then(() => {
         countCopiedFiles += 1;
-        mainWindow.webContents.send('file:copied', { countFiles, countCopiedFiles });
+        mainWindow.webContents.send('file:copied', { countFilesToCopy, countCopiedFiles });
         return Promise.resolve();
       }),
     );
@@ -584,6 +605,13 @@ const menuTemplate = [
           {
             label: 'Import Track',
             click() {
+              if (importInProgress) {
+                dialog.showMessageBox(mainWindow, {
+                  type: 'error',
+                  message: 'Another import process is ongoing. Cancelling.',
+                });
+                return;
+              }
               dialog.showOpenDialog(mainWindow, { properties: ['openFile', 'multiSelections'] })
                 .then(result => addTracks(result.filePaths));
             },
@@ -592,6 +620,13 @@ const menuTemplate = [
             label: 'Import Folder',
             accelerator: 'Command+O',
             click() {
+              if (importInProgress) {
+                dialog.showMessageBox(mainWindow, {
+                  type: 'error',
+                  message: 'Another import process is ongoing. Cancelling.',
+                });
+                return;
+              }
               dialog.showOpenDialog(mainWindow, { properties: ['openDirectory', 'multiSelections'] })
                 .then(result => analyzePaths(result.filePaths))
                 .then(filepathsArrays => addTracks(Array.concat.apply([], filepathsArrays)));

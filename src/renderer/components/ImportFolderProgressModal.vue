@@ -1,11 +1,11 @@
 <template>
   <modal
-    name="flattening-folder-progress-modal"
-    id="flattening-folder-progress-modal"
+    name="import-folder-progress-modal"
+    id="import-folder-progress-modal"
     :clickToClose="false"
   >
     <div class="text-centered">
-      Copying files... {{ countCopiedFiles }} / {{ countFilesToCopy }}
+      Importing files with their metadata... {{ countImportedFiles }} / {{ countFilesToImport }}
       <b-progress
         class="mt-2"
         :max="100"
@@ -23,20 +23,20 @@ import { mapState } from 'vuex';
 import { ipcRenderer } from 'electron';
 
 export default {
-  name: 'FlatteningFolderProgressModal',
+  name: 'ImportFolderProgressModal',
   computed: {
-    ...mapState('files', ['flattening', 'countFilesToCopy', 'countCopiedFiles']),
+    ...mapState('files', ['importing', 'countFilesToImport', 'countImportedFiles']),
     currentProgress() {
-      return 100 * (this.countCopiedFiles / this.countFilesToCopy);
+      return 100 * (this.countImportedFiles / this.countFilesToImport);
     },
     hasEnded() {
-      return this.countCopiedFiles === this.countFilesToCopy;
+      return this.countImportedFiles === this.countFilesToImport;
     },
   },
   methods: {
     closeModal() {
-      ipcRenderer.send('folder:flattened');
-      this.$modal.hide('flattening-folder-progress-modal');
+      ipcRenderer.send('folder:imported');
+      this.$modal.hide('import-folder-progress-modal');
     },
   },
 };

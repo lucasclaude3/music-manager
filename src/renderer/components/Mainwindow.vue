@@ -86,6 +86,7 @@
       </tbody>
     </table>
     <FlatteningFolderProgressModal />
+    <ImportFolderProgressModal />
   </div>
 </template>
 
@@ -93,6 +94,7 @@
 import { mapState, mapActions } from 'vuex';
 import { remote, ipcRenderer, shell } from 'electron';
 import FlatteningFolderProgressModal from './FlatteningFolderProgressModal';
+import ImportFolderProgressModal from './ImportFolderProgressModal';
 
 const { Menu, MenuItem } = remote;
 
@@ -100,6 +102,7 @@ export default {
   name: 'MainWindow',
   components: {
     FlatteningFolderProgressModal,
+    ImportFolderProgressModal,
   },
   data() {
     return {
@@ -133,6 +136,7 @@ export default {
     window.document.addEventListener('mousemove', this.onMouseMove);
     window.document.addEventListener('mouseup', this.onMouseUp);
     this.watchFolderFlattening();
+    this.watchFolderImport();
   },
   computed: {
     ...mapState('tracks', ['tracks']),
@@ -178,6 +182,8 @@ export default {
       updateColumnOrder: 'columns/updateColumnOrder',
       updateFlatteningStatus: 'files/updateFlatteningStatus',
       updateCopiedFilesCount: 'files/updateCopiedFilesCount',
+      updateImportStatus: 'files/updateImportStatus',
+      updateImportedFilesCount: 'files/updateImportedFilesCount',
     }),
     capitalize(str) {
       return str.charAt(0).toUpperCase() + str.slice(1);
@@ -342,14 +348,28 @@ export default {
       this.columnId = event.target.parentNode.id;
     },
     watchFolderFlattening() {
+      // the code must stay here because we can't call modal.show from the reducer
       ipcRenderer.on('folder:start_flattening', () => {
         this.updateFlatteningStatus({ flattening: true });
         this.$modal.show('flattening-folder-progress-modal');
       });
-      ipcRenderer.on('file:copied', (event, { countFiles, countCopiedFiles }) => {
-        this.updateCopiedFilesCount({ countFiles, countCopiedFiles });
-        if (countFiles === countCopiedFiles) {
+      ipcRenderer.on('file:copied', (event, { countFilesToCopy, countCopiedFiles }) => {
+        this.updateCopiedFilesCount({ countFilesToCopy, countCopiedFiles });
+        if (countFilesToCopy === countCopiedFiles) {
           this.updateFlatteningStatus({ flattening: false });
+        }
+      });
+    },
+    watchFolderImport() {
+      // the code must stay here because we can't call modal.show from the reducer
+      ipcRenderer.on('folder:start_import', () => {
+        this.updateImportStatus({ importing: true });
+        this.$modal.show('import-folder-progress-modal');
+      });
+      ipcRenderer.on('file:imported', (event, { countFilesToImport, countImportedFiles }) => {
+        this.updateImportedFilesCount({ countFilesToImport, countImportedFiles });
+        if (countFilesToImport === countImportedFiles) {
+          this.updateImportStatus({ importing: false });
         }
       });
     },

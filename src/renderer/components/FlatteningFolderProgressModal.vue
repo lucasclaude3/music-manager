@@ -20,6 +20,7 @@
 
 <script>
 import { mapState } from 'vuex';
+import { ipcRenderer } from 'electron';
 
 export default {
   name: 'FlatteningFolderProgressModal',
@@ -34,6 +35,7 @@ export default {
   },
   methods: {
     closeModal() {
+      ipcRenderer.send('folder:flattened');
       this.$modal.hide('flattening-folder-progress-modal');
     },
   },

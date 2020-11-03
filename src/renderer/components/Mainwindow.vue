@@ -348,9 +348,9 @@ export default {
       });
       ipcRenderer.on('file:copied', (event, { countFiles, countCopiedFiles }) => {
         this.updateCopiedFilesCount({ countFiles, countCopiedFiles });
-      });
-      ipcRenderer.on('folder:flattened', () => {
-        this.updateFlatteningStatus({ flattening: false });
+        if (countFiles === countCopiedFiles) {
+          this.updateFlatteningStatus({ flattening: false });
+        }
       });
     },
   },

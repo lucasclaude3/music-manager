@@ -538,14 +538,15 @@ let countFiles = 0;
 let countCopiedFiles = 0;
 
 const flattenFolder = async (dir) => {
-  if (flatteningInProgress) {
-    throw new Error('Another flattening process is ongoing. Cancelling.');
-  }
   let timestamp = new Date().toISOString().substring(0, 10);
   timestamp = timestamp.replace(/./g, char => (char.charCodeAt(0) === 45 ? '' : char));
   const newDir = `${dir}_${timestamp}`;
   if (fs.existsSync(newDir)) {
-    throw new Error('Directory already exists. Cancelling.');
+    dialog.showMessageBox(mainWindow, {
+      type: 'error',
+      message: `Destination directory '${path.basename(newDir)}' already exists. Cancelling.`,
+    });
+    return;
   }
 
   mainWindow.webContents.send('folder:start_flattening', { dir, newDir });
@@ -563,11 +564,11 @@ const flattenFolder = async (dir) => {
         mainWindow.webContents.send('file:copied', { countFiles, countCopiedFiles });
         return Promise.resolve();
       }),
-    )
-    .then(() => {
-      flatteningInProgress = false;
-      mainWindow.webContents.send('folder:flattened', { countFiles });
-    });
+    );
+
+  ipcMain.on('folder:flattened', () => {
+    flatteningInProgress = false;
+  });
 };
 
 const menuTemplate = [
@@ -601,6 +602,13 @@ const menuTemplate = [
       {
         label: 'Flatten Folder',
         click() {
+          if (flatteningInProgress) {
+            dialog.showMessageBox(mainWindow, {
+              type: 'error',
+              message: 'Another flattening process is ongoing. Cancelling.',
+            });
+            return;
+          }
           dialog.showOpenDialog(mainWindow, { properties: ['openDirectory'] })
             .then(result => flattenFolder(result.filePaths[0]));
         },

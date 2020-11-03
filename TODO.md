@@ -33,8 +33,8 @@
 - [x] Open file in folder
 - [ ] Better icons
 - [ ] Show total time + remaining
-- [ ] Loaders and notifs
+- [x] Loaders and notifs
 - [ ] Limit state history size
 - [ ] Tests
-- [ ] How to handle files
+- [ ] How to handle aif files
 - [ ] Clean track names

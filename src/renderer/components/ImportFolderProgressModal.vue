@@ -19,13 +19,13 @@
 </template>
 
 <script>
-import { mapState } from 'vuex';
+import { mapState, mapActions } from 'vuex';
 import { ipcRenderer } from 'electron';
 
 export default {
   name: 'ImportFolderProgressModal',
   computed: {
-    ...mapState('files', ['importing', 'countFilesToImport', 'countImportedFiles']),
+    ...mapState('files', ['countFilesToImport', 'countImportedFiles']),
     currentProgress() {
       return 100 * (this.countImportedFiles / this.countFilesToImport);
     },
@@ -34,9 +34,13 @@ export default {
     },
   },
   methods: {
+    ...mapActions({
+      updateImportedFilesCount: 'files/updateImportedFilesCount',
+    }),
     closeModal() {
       ipcRenderer.send('folder:imported');
       this.$modal.hide('import-folder-progress-modal');
+      this.updateImportedFilesCount({ countFilesToImport: 0, countImportedFiles: 0 });
     },
   },
 };

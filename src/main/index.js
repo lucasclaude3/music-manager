@@ -196,12 +196,13 @@ const addTracks = (filepaths) => {
         return Promise.resolve();
       })
       .catch((err) => {
+        countImportedFiles += 1;
         mainWindow.webContents.send('file:imported', { countFilesToImport, countImportedFiles });
         console.log(err);
       }),
     { concurrency: 5 },
   );
-  ipcMain.on('files:imported', () => {
+  ipcMain.on('folder:imported', () => {
     importInProgress = false;
   });
 };

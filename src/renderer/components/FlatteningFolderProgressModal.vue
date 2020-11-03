@@ -19,13 +19,13 @@
 </template>
 
 <script>
-import { mapState } from 'vuex';
+import { mapState, mapActions } from 'vuex';
 import { ipcRenderer } from 'electron';
 
 export default {
   name: 'FlatteningFolderProgressModal',
   computed: {
-    ...mapState('files', ['flattening', 'countFilesToCopy', 'countCopiedFiles']),
+    ...mapState('files', ['countFilesToCopy', 'countCopiedFiles']),
     currentProgress() {
       return 100 * (this.countCopiedFiles / this.countFilesToCopy);
     },
@@ -34,9 +34,13 @@ export default {
     },
   },
   methods: {
+    ...mapActions({
+      updateCopiedFilesCount: 'files/updateCopiedFilesCount',
+    }),
     closeModal() {
       ipcRenderer.send('folder:flattened');
       this.$modal.hide('flattening-folder-progress-modal');
+      this.updateCopiedFilesCount({ countFilesToCopy: 0, countCopiedFiles: 0 });
     },
   },
 };

@@ -20,7 +20,10 @@ export default {
     this.playlistsUrl = `https://www.googleapis.com/youtube/v3/playlists?part=snippet%2CcontentDetails%2Cid&maxResults=20&key=${process.env.YOUTUBE_API_KEY}`;
     this.playlistItemsUrl = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet%2CcontentDetails%2Cid&maxResults=20&key=${process.env.YOUTUBE_API_KEY}`;
     this.loadAllPlaylists()
-      .then(this.loadAllPlaylistsItems);
+      .then(this.loadAllPlaylistsItems)
+      .then(() => {
+        console.log(this.playlists);
+      });
   },
   computed: {
   },
@@ -36,7 +39,6 @@ export default {
       });
     },
     loadAllPlaylistsItems() {
-      console.log('Wesh', this.playlists);
       return Promise.map(
         this.playlists,
         p => this.loadPlaylistItems(p.id),
@@ -44,12 +46,11 @@ export default {
       );
     },
     loadPlaylistItems(playlistId) {
-      console.log(playlistId);
       return this.getPageAndIterate({
         url: `${this.playlistItemsUrl}&playlistId=${playlistId}`,
         nextPageToken: null,
         isFirstCall: true,
-        auxiliaryFunction: this.savePlaylistItems,
+        auxiliaryFunction: data => this.savePlaylistItems(data, playlistId),
       });
     },
     getPageAndIterate({
@@ -58,9 +59,7 @@ export default {
       isFirstCall,
       auxiliaryFunction,
     }) {
-      console.log(nextPageToken, isFirstCall);
       if (!nextPageToken && !isFirstCall) {
-        console.log('Resolved');
         return Promise.resolve();
       }
       let finalUrl = url;
@@ -82,8 +81,9 @@ export default {
       this.playlists = this.playlists.concat(data.items);
       this.nextPageToken = data.nextPageToken;
     },
-    savePlaylistItems(data) {
-      console.log(data);
+    savePlaylistItems(data, playlistId) {
+      const playlist = this.playlists.find(p => p.id === playlistId);
+      playlist.playlistItems = (playlist.playlistItems || []).concat(data.items);
     },
   },
 };

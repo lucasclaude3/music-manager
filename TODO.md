@@ -33,6 +33,11 @@
 - [x] Better icons
 - [x] Show total time + remaining
 - [x] Loaders and notifs
+Youtube part:
+- Extend / hide sidebar
+
+
+
 - [ ] Tests
 - [ ] How to handle aif files
 - [ ] Clean track names ?

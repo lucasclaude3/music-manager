@@ -198,8 +198,6 @@ export default {
   @import 'styles/_vars.scss';
 
   .reader-wrapper {
-    position: fixed;
-    width: calc(100% - #{$readerWidth});
     height: 130px;
     border-bottom: 1px solid $black;
     padding-top: 10px;

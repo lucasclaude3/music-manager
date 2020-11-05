@@ -5,6 +5,7 @@
       <Reader />
       <MainWindow />
     </div>
+    <YoutubeWindow />
   </main>
 </template>
 
@@ -12,6 +13,7 @@
 import Reader from './Reader';
 import Sidebar from './Sidebar';
 import MainWindow from './MainWindow';
+import YoutubeWindow from './YoutubeWindow';
 
 export default {
   name: 'AppShell',
@@ -19,6 +21,7 @@ export default {
     Reader,
     Sidebar,
     MainWindow,
+    YoutubeWindow,
   },
 };
 </script>
@@ -31,6 +34,7 @@ export default {
     flex-direction: column;
     width: 100%;
     align-items: stretch;
-    padding-left: $readerWidth;
+    padding-left: $sidebarWidth;
+    padding-right: $sidebarWidth;
   }
 </style>

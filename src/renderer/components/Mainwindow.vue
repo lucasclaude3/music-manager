@@ -123,7 +123,7 @@ export default {
   },
   mounted() {
     this.loadColumnsContextMenu();
-    this.loadColumns(window.innerWidth - 250);
+    this.loadColumns(window.innerWidth - 500);
     this.loadTracks();
     this.loadTracksContextMenu();
     this.watchTrackAddition();
@@ -131,7 +131,7 @@ export default {
     window.addEventListener('resize', () => {
       this.winHeight = window.innerHeight;
       this.winWidth = window.innerWidth;
-      this.loadColumns(window.innerWidth - 250);
+      this.loadColumns(window.innerWidth - 500);
     });
     window.document.addEventListener('mousemove', this.onMouseMove);
     window.document.addEventListener('mouseup', this.onMouseUp);
@@ -284,7 +284,7 @@ export default {
             type: 'checkbox',
             checked: c.visible,
             click() {
-              vm.toggleColumnVisibility({ columnId: c.id, windowWidth: (window.innerWidth - 250) });
+              vm.toggleColumnVisibility({ columnId: c.id, windowWidth: (window.innerWidth - 500) });
             },
           }));
         });
@@ -371,7 +371,6 @@ export default {
   @import 'styles/_vars.scss';
 
   .main-window {
-    margin-top: 130px;
     overflow: hidden;
     line-height: 2;
   }

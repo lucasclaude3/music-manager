@@ -29,12 +29,13 @@
 - [x] Fix order by desc / asc
 - [x] Scroller for tracks
 - [x] Modal text when no old tag found
-- [ ] Analyze genres?
 - [x] Open file in folder
 - [x] Better icons
-- [ ] Show total time + remaining
+- [x] Show total time + remaining
 - [x] Loaders and notifs
-- [ ] Limit state history size
 - [ ] Tests
 - [ ] How to handle aif files
-- [ ] Clean track names
+- [ ] Clean track names ?
+- [ ] Youtube connector to spec -> wish list on the right?
+- [ ] Soulseek connector ?
+- [ ] Clear

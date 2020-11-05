@@ -121,10 +121,10 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: true,
     },
-    width: 1100,
-    minWidth: 1100,
-    height: 600,
-    minHeight: 600,
+    width: 1200,
+    minWidth: 1200,
+    height: 700,
+    minHeight: 700,
     useContentSize: true,
   });
 

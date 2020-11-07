@@ -1,49 +1,47 @@
 <template>
-  <div>
-    <div class="sidebar">
-      Tags
-      <ul>
-        <li
-          class="tag"
-          @click="event => onClickAllTracks(event, false)"
-          :class="{ selected: !currentTag && !withoutTags }">
-          All tracks
-        </li>
-        <li
-          class="tag"
-          @click="event => onClickAllTracks(event, true)"
-          :class="{ selected: !currentTag && withoutTags }">
-          Tracks without Tags
-        </li>
-        <li
-          class="tag"
-          v-for="tag in orderedTags"
-          v-html="tag.name"
-          v-bind:key="tag.id"
-          v-bind:id="tag.id"
-          @keydown="event => onEnter(event, tag)"
-          @dragover="handleDragTrackover"
-          @dragleave="handleDragLeave"
-          @drop="handleDropTrack"
-          @click="event => onClick(event, tag)"
-          @dblclick="onDblClick"
-          @blur="onBlur"
-          :class="{ selected: currentTag && currentTag.id === tag.id }">
-        </li>
-      </ul>
-      <b-button @click="applyCurrentTag()" type="button" v-if="currentTag !== null">
-        Apply current Tag
-      </b-button>
-      <b-button @click="createTag()" type="button">
-        &#43; Add Tag
-      </b-button>
-      <b-button @click="analyzeComments()" type="button">
-        &#43; Analyze comments
-      </b-button>
-      <!-- <b-button @click="clearAllMetadata()" type="button">
-        &#43; Clear all Metadata
-      </b-button> -->
-    </div>
+  <div class="sidebar">
+    Tags
+    <ul>
+      <li
+        class="tag"
+        @click="event => onClickAllTracks(event, false)"
+        :class="{ selected: !currentTag && !withoutTags }">
+        All tracks
+      </li>
+      <li
+        class="tag"
+        @click="event => onClickAllTracks(event, true)"
+        :class="{ selected: !currentTag && withoutTags }">
+        Tracks without Tags
+      </li>
+      <li
+        class="tag"
+        v-for="tag in orderedTags"
+        v-html="tag.name"
+        v-bind:key="tag.id"
+        v-bind:id="tag.id"
+        @keydown="event => onEnter(event, tag)"
+        @dragover="handleDragTrackover"
+        @dragleave="handleDragLeave"
+        @drop="handleDropTrack"
+        @click="event => onClick(event, tag)"
+        @dblclick="onDblClick"
+        @blur="onBlur"
+        :class="{ selected: currentTag && currentTag.id === tag.id }">
+      </li>
+    </ul>
+    <b-button @click="applyCurrentTag()" type="button" v-if="currentTag !== null">
+      Apply current Tag
+    </b-button>
+    <b-button @click="createTag()" type="button">
+      &#43; Add Tag
+    </b-button>
+    <b-button @click="analyzeComments()" type="button">
+      &#43; Analyze comments
+    </b-button>
+    <!-- <b-button @click="clearAllMetadata()" type="button">
+      &#43; Clear all Metadata
+    </b-button> -->
     <TagsAnalysisModal />
   </div>
 </template>

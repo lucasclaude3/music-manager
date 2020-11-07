@@ -373,6 +373,7 @@ export default {
   .main-window {
     overflow: hidden;
     line-height: 2;
+    z-index: 0;
   }
 
   .searchbar {

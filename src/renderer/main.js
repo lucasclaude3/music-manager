@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import BootstrapVue from 'bootstrap-vue';
 import VueSVGIcon from 'vue-svgicon';
 import VModal from 'vue-js-modal';
+import VueYoutube from 'vue-youtube';
 
 import '@/assets/scss/main.scss';
 
@@ -16,6 +17,7 @@ if (!process.env.IS_WEB) Vue.use(require('vue-electron'));
 Vue.use(BootstrapVue);
 Vue.use(VueSVGIcon);
 Vue.use(VModal);
+Vue.use(VueYoutube);
 
 Vue.http = Vue.prototype.$http = axios;
 Vue.config.productionTip = false;

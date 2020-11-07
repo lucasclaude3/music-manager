@@ -201,7 +201,7 @@ export default {
     height: 130px;
     border-bottom: 1px solid $black;
     padding-top: 10px;
-    z-index: 1;
+    z-index: 0;
   }
 
   .reader {

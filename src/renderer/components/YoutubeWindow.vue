@@ -6,7 +6,6 @@
       ref="youtube"
       v-if="videoId"
       :video-id="videoId"
-      @playing="playing"
     ></youtube>
     <ul class="playlists">
       <li
@@ -23,7 +22,8 @@
             :key="item.id"
             :id="item.id"
             class="item"
-            @click="() => loadVideo(item.snippet.resourceId.videoId)"
+            :class="{ selected: selectedVideoElt && selectedVideoElt.id === item.id }"
+            @click="event => loadVideo({ event, videoElt: item })"
           >
             {{ item.snippet.title }}
           </li>
@@ -46,6 +46,8 @@ export default {
       winHeight: window.innerHeight,
       winWidth: window.innerWidth,
       videoId: null,
+      selectedPlaylistElt: null,
+      selectedVideoElt: null,
     };
   },
   mounted() {
@@ -72,11 +74,10 @@ export default {
     playVideo() {
       this.player.playVideo();
     },
-    playing() {
-      console.log('\\o/ we are watching!!!');
-    },
-    loadVideo(videoId) {
-      this.videoId = videoId;
+    loadVideo({ event, videoElt }) {
+      event.stopPropagation();
+      this.selectedVideoElt = videoElt;
+      this.videoId = videoElt.snippet.resourceId.videoId;
     },
     loadAllPlaylists() {
       return this.getPageAndIterate({
@@ -136,9 +137,13 @@ export default {
     },
     toggleCollapse(event) {
       const itemsElt = event.target.getElementsByClassName('items')[0];
-      if (itemsElt.classList.contains('items-selected')) {
-        itemsElt.classList.remove('items-selected');
+      if (this.selectedPlaylistElt) {
+        this.selectedPlaylistElt.getElementsByClassName('items')[0].classList.remove('items-selected');
+      }
+      if (this.selectedPlaylistElt === event.target) {
+        this.selectedPlaylistElt = null;
       } else {
+        this.selectedPlaylistElt = event.target;
         itemsElt.classList.add('items-selected');
       }
     },
@@ -172,14 +177,25 @@ export default {
   .playlists {
     overflow-y: scroll;
     height: 100vh;
+    list-style-type: none;
+    padding-inline-start: 0px;
   }
 
   .items {
     display: none;
+    list-style-type: myanmar;
 
     &.items-selected {
       display: initial;
     }
+  }
+
+  .item {
+    margin-left: 30px;
+  }
+
+  .selected {
+    color: $mainColor;
   }
 
 </style>

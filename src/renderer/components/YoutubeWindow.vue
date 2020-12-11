@@ -158,8 +158,10 @@ export default {
     position: fixed;
     top: 0;
     right: 0;
-    min-width: $sidebarWidth;
-    max-width: $sidebarWidth;
+    margin-right: $collapsableSidebarWidth;
+    border-right: 1px solid rgba($mainColor, 0.2);
+    min-width: 2*$sidebarWidth;
+    max-width: 2*$sidebarWidth;
     min-height: 100vh;
     max-height: 100vh;
     overflow: hidden;

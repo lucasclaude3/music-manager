@@ -72,6 +72,7 @@
     "mime-type": "^3.0.7",
     "node-id3": "^0.1.14",
     "terser-webpack-plugin": "^2.3.1",
+    "uuid": "^8.3.2",
     "vue": "^2.5.16",
     "vue-electron": "^1.0.6",
     "vue-js-modal": "^2.0.0-rc.3",

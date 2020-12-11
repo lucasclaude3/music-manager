@@ -6,6 +6,7 @@ import VueSVGIcon from 'vue-svgicon';
 import VModal from 'vue-js-modal';
 import VueYoutube from 'vue-youtube';
 
+import router from '@/router/router.js';
 import '@/assets/scss/main.scss';
 
 import App from './App';
@@ -27,4 +28,5 @@ new Vue({
   components: { App },
   store,
   template: '<App/>',
+  router,
 }).$mount('#app');

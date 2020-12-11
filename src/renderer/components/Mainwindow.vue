@@ -93,6 +93,8 @@
 <script>
 import { mapState, mapActions } from 'vuex';
 import { remote, ipcRenderer, shell } from 'electron';
+import avars from '@/assets/utils/vars';
+
 import FlatteningFolderProgressModal from './FlatteningFolderProgressModal';
 import ImportFolderProgressModal from './ImportFolderProgressModal';
 
@@ -119,11 +121,13 @@ export default {
       columnId: null,
       selectedColumnId: null,
       tracksContextMenu: null,
+      vars: avars,
     };
   },
   mounted() {
     this.loadColumnsContextMenu();
-    this.loadColumns(window.innerWidth - 500);
+    this.loadColumns(window.innerWidth -
+      (this.vars.sidebarWidth + this.vars.collapsableSidebarWidth));
     this.loadTracks();
     this.loadTracksContextMenu();
     this.watchTrackAddition();
@@ -131,7 +135,8 @@ export default {
     window.addEventListener('resize', () => {
       this.winHeight = window.innerHeight;
       this.winWidth = window.innerWidth;
-      this.loadColumns(window.innerWidth - 500);
+      this.loadColumns(window.innerWidth -
+        (this.vars.sidebarWidth + this.vars.collapsableSidebarWidth));
     });
     window.document.addEventListener('mousemove', this.onMouseMove);
     window.document.addEventListener('mouseup', this.onMouseUp);
@@ -284,7 +289,12 @@ export default {
             type: 'checkbox',
             checked: c.visible,
             click() {
-              vm.toggleColumnVisibility({ columnId: c.id, windowWidth: (window.innerWidth - 500) });
+              vm.toggleColumnVisibility({
+                columnId: c.id,
+                windowWidth:
+                  (window.innerWidth -
+                    (this.vars.sidebarWidth + this.vars.collapsableSidebarWidth)),
+              });
             },
           }));
         });

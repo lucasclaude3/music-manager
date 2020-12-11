@@ -34,13 +34,16 @@
 - [x] Show total time + remaining
 - [x] Loaders and notifs
 Youtube part:
-- Extend / hide sidebar
+- Extend / hide sidebar (toggle + click outside pannel)
+- Find best width
+- Put selected playlist on top? or just a scroll? or hide other playlists when navigating?
+- Store playlists items once and for all, then only update when needed
 
 
 
 - [ ] Tests
-- [ ] How to handle aif files
-- [ ] Clean track names ?
+- [ ] How to handle aif files?
+- [ ] Clean track names?
 - [ ] Youtube connector to spec -> wish list on the right?
 - [ ] Soulseek connector ?
 - [ ] Clear

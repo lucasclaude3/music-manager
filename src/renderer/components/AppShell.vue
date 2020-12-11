@@ -5,7 +5,7 @@
       <Reader />
       <MainWindow />
     </div>
-    <YoutubeWindow />
+    <CollapsableSidebar />
   </main>
 </template>
 
@@ -13,7 +13,7 @@
 import Reader from './Reader';
 import Sidebar from './Sidebar';
 import MainWindow from './MainWindow';
-import YoutubeWindow from './YoutubeWindow';
+import CollapsableSidebar from './CollapsableSidebar';
 
 export default {
   name: 'AppShell',
@@ -21,7 +21,7 @@ export default {
     Reader,
     Sidebar,
     MainWindow,
-    YoutubeWindow,
+    CollapsableSidebar,
   },
 };
 </script>
@@ -35,6 +35,6 @@ export default {
     width: 100%;
     align-items: stretch;
     padding-left: $sidebarWidth;
-    padding-right: $sidebarWidth;
+    padding-right: $collapsableSidebarWidth;
   }
 </style>

@@ -1,27 +1,43 @@
 <template>
   <main>
-    <Sidebar />
-    <div class="wrapper">
+    <TheLeftCollapsableSidebar />
+    <div
+      class="wrapper"
+      :style="{'padding-left':
+        (collapsableSidebarWidth + (isLeftSidebarOpened ? sidebarWidth : 0)) + 'px'}">
       <Reader />
       <MainWindow />
     </div>
-    <CollapsableSidebar />
+    <TheRightCollapsableSidebar />
   </main>
 </template>
 
 <script>
+import { mapState } from 'vuex';
+import vars from '@/assets/utils/vars';
+
 import Reader from './Reader';
-import Sidebar from './Sidebar';
+import TheLeftCollapsableSidebar from './TheLeftCollapsableSidebar';
 import MainWindow from './MainWindow';
-import CollapsableSidebar from './CollapsableSidebar';
+import TheRightCollapsableSidebar from './TheRightCollapsableSidebar';
 
 export default {
   name: 'AppShell',
   components: {
     Reader,
-    Sidebar,
+    TheLeftCollapsableSidebar,
     MainWindow,
-    CollapsableSidebar,
+    TheRightCollapsableSidebar,
+  },
+  data() {
+    return {
+      collapsableSidebarWidth: vars.collapsableSidebarWidth,
+      sidebarWidth: vars.sidebarWidth,
+    };
+  },
+  mounted() {},
+  computed: {
+    ...mapState('columns', ['isLeftSidebarOpened']),
   },
 };
 </script>
@@ -34,7 +50,7 @@ export default {
     flex-direction: column;
     width: 100%;
     align-items: stretch;
-    padding-left: $sidebarWidth;
     padding-right: $collapsableSidebarWidth;
+    transition: padding 0.3s ease;
   }
 </style>

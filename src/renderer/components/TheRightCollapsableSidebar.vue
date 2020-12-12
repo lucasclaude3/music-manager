@@ -22,7 +22,7 @@ import { v4 as uuid } from 'uuid';
 import '@/assets/compiled-icons/youtube';
 
 export default {
-  name: 'CollapsableSidebar',
+  name: 'TheRightCollapsableSidebar',
   data() {
     return {
       windowElements: [
@@ -69,6 +69,7 @@ export default {
   }
 
   .icons-list {
+    width: $collapsableSidebarWidth;
     list-style-type: none;
     padding-inline-start: 0px;
     padding: 10px;

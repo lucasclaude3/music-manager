@@ -2,6 +2,7 @@ import { ipcRenderer } from 'electron';
 
 const state = {
   columns: [],
+  isLeftSidebarOpened: true,
 };
 
 const thresholds = (input, lowerBound, upperBound) =>
@@ -34,6 +35,10 @@ const mutations = {
     resizedColumn.size += diffX;
     otherColumnImpacted.size -= diffX;
     state.columns = oldColumns.concat([resizedColumn, otherColumnImpacted]);
+  },
+
+  UPDATE_LEFT_SIDEBAR_CONFIG(state, payload) {
+    state.isLeftSidebarOpened = payload.isLeftSidebarOpened;
   },
 };
 
@@ -78,6 +83,10 @@ const actions = {
       commit({ type: 'LOAD_COLUMNS', columns });
       ipcRenderer.removeAllListeners('columns:loaded');
     });
+  },
+
+  updateLeftSidebarConfig({ commit }, { isLeftSidebarOpened }) {
+    commit({ type: 'UPDATE_LEFT_SIDEBAR_CONFIG', isLeftSidebarOpened });
   },
 };
 

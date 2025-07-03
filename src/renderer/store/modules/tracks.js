@@ -13,7 +13,7 @@ const mutations = {
   },
   LOAD_COMMENTS(state, payload) {
     state.comments = (payload.comments || [])
-      .map(c => ({
+      .map((c) => ({
         originalComment: c,
         modifiedComment: c,
         selected: true,
@@ -23,21 +23,21 @@ const mutations = {
   TOGGLE_REMOVE_COMMENT(state, payload) {
     const { comment } = payload;
     comment.selected = !comment.selected;
-    const idx = state.comments.findIndex(c => c.originalComment === comment.originalComment);
+    const idx = state.comments.findIndex((c) => c.originalComment === comment.originalComment);
     state.comments.splice(idx, 1, comment);
   },
   UPDATE_COMMENT(state, payload) {
     const { comment, newValue } = payload;
     comment.modifiedComment = newValue;
     comment.hasBeenModified = true;
-    const idx = state.comments.findIndex(c => c.originalComment === comment.originalComment);
+    const idx = state.comments.findIndex((c) => c.originalComment === comment.originalComment);
     state.comments.splice(idx, 1, comment);
   },
   ADD_TRACKS(state, payload) {
     state.tracks = state.tracks.concat(payload.tracks);
   },
   UPDATE_TRACK(state, payload) {
-    state.tracks = state.tracks.filter(t => t.id !== payload.track.id);
+    state.tracks = state.tracks.filter((t) => t.id !== payload.track.id);
     state.tracks.push(payload.track);
   },
   LAUNCH_TRACK(state, payload) {
@@ -61,7 +61,7 @@ const actions = {
   loadAllTracks({ commit }, withoutTags) {
     ipcRenderer.send('tracks:load');
     ipcRenderer.on('tracks:loaded', (event, tracks) => {
-      const tracksToLoad = withoutTags ? tracks.filter(t => t.tagBag.length === 0) : tracks;
+      const tracksToLoad = withoutTags ? tracks.filter((t) => t.tagBag.length === 0) : tracks;
       commit({ type: 'LOAD_TRACKS', tracks: tracksToLoad });
       ipcRenderer.removeAllListeners('tracks:loaded');
     });
@@ -98,7 +98,7 @@ const actions = {
   searchTrack({ commit }, { searchTerms, tag }) {
     ipcRenderer.send('track:search', { searchTerms, tag });
     ipcRenderer.on('tracks:loaded', (event, tracks) => {
-      const tracksToLoad = tag ? tracks.filter(t => t.tagBag.indexOf(tag.id) > -1) : tracks;
+      const tracksToLoad = tag ? tracks.filter((t) => t.tagBag.indexOf(tag.id) > -1) : tracks;
       commit({ type: 'LOAD_TRACKS', tracks: tracksToLoad });
       ipcRenderer.removeAllListeners('tracks:loaded');
     });
@@ -107,7 +107,7 @@ const actions = {
   removeTracksFromList({ commit }, { trackIds, tag }) {
     ipcRenderer.send('tracks:remove', { trackIds, tag });
     ipcRenderer.on('tracks:loaded', (event, tracks) => {
-      const tracksToLoad = tag ? tracks.filter(t => t.tagBag.indexOf(tag.id) > -1) : tracks;
+      const tracksToLoad = tag ? tracks.filter((t) => t.tagBag.indexOf(tag.id) > -1) : tracks;
       commit({ type: 'LOAD_TRACKS', tracks: tracksToLoad });
       ipcRenderer.removeAllListeners('tracks:loaded');
     });
@@ -130,7 +130,7 @@ const actions = {
   },
 
   applyTags({ commit }, comments) {
-    const selectedComments = comments.filter(c => c.selected === true);
+    const selectedComments = comments.filter((c) => c.selected === true);
     ipcRenderer.send('tracks:applyTags', selectedComments);
     ipcRenderer.on('track:tagsAdded', (event, track) => {
       commit({ type: 'UPDATE_TRACK', track });

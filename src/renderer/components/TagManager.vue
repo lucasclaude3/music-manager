@@ -111,7 +111,7 @@ export default {
         .dataTransfer
         .getData('text')
         .split(',')
-        .map(t => parseInt(t, 10));
+        .map((t) => parseInt(t, 10));
       this.addTagToTracks({ tagId, trackIds });
       this.handleDragLeave(event);
     },
@@ -128,7 +128,7 @@ export default {
       event.target.contentEditable = true;
     },
     onBlur(event) {
-      const updatedTag = this.tags.find(t => t.id === parseInt(event.target.id, 10));
+      const updatedTag = this.tags.find((t) => t.id === parseInt(event.target.id, 10));
       event.target.innerText = updatedTag.name;
       event.target.contentEditable = false;
     },

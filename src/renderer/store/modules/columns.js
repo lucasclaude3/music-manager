@@ -5,7 +5,10 @@ const state = {
   isLeftSidebarOpened: true,
 };
 
-const thresholds = (input, lowerBound, upperBound) => Math.min(Math.max(input, lowerBound), upperBound);
+const thresholds = (input, lowerBound, upperBound) => Math.min(
+  Math.max(input, lowerBound),
+  upperBound,
+);
 
 const mutations = {
   LOAD_COLUMNS(state, payload) {

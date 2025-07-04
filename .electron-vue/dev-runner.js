@@ -54,6 +54,7 @@ function startRenderer () {
 
     const server = new WebpackDevServer(
       {
+        port: 9081,
         static: {
           directory: path.join(__dirname, '../')
         },
@@ -66,7 +67,11 @@ function startRenderer () {
     )
 
     server.start().then(() => {
+      console.log('Dev server started on http://localhost:9081')
       resolve()
+    }).catch(err => {
+      console.error('Failed to start dev server:', err)
+      reject(err)
     })
   })
 }

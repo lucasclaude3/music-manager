@@ -92,7 +92,8 @@
 
 <script>
 import { mapState, mapActions } from 'vuex';
-import { remote, ipcRenderer, shell } from 'electron';
+import { ipcRenderer, shell } from 'electron';
+import * as remote from '@electron/remote';
 import avars from '@/assets/utils/vars';
 
 import FlatteningFolderProgressModal from './FlatteningFolderProgressModal';

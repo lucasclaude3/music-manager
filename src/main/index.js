@@ -1,4 +1,5 @@
 import { app, BrowserWindow, ipcMain, Menu, dialog } from 'electron' // eslint-disable-line
+import * as remoteMain from '@electron/remote/main';
 import Store from 'electron-store';
 import { Promise } from 'bluebird';
 import NodeID3 from 'node-id3';
@@ -36,6 +37,8 @@ const writeMetadata = (filepath, tags) => new Promise((resolve, reject) => {
 const readDir = Promise.promisify(fs.readdir);
 const stat = Promise.promisify(fs.stat);
 const copyFile = Promise.promisify(fs.copyFile);
+
+remoteMain.initialize();
 
 const store = new Store();
 // store.clear();
@@ -118,6 +121,7 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     webPreferences: {
       nodeIntegration: true,
+      contextIsolation: false,
     },
     width: 1200,
     minWidth: 1200,
@@ -125,6 +129,8 @@ function createWindow() {
     minHeight: 700,
     useContentSize: true,
   });
+
+  remoteMain.enable(mainWindow.webContents);
 
   mainWindow.loadURL(winURL);
 

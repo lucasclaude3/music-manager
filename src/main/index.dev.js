@@ -10,15 +10,10 @@
 // Install `electron-debug` with `devtron`
 require('electron-debug')({ showDevTools: true })
 
-// Install `vue-devtools`
-require('electron').app.on('ready', () => {
-  let installExtension = require('electron-devtools-installer')
-  installExtension.default(installExtension.VUEJS_DEVTOOLS)
-    .then(() => {})
-    .catch(err => {
-      console.log('Unable to install `vue-devtools`: \n', err)
-    })
-})
+// NOTE: vue-devtools auto-install disabled. electron-devtools-installer
+// pulls the latest Vue Devtools extension (now Manifest V3), which is
+// incompatible with this project's Electron 22 (too old to load MV3
+// extensions) and crashes the entire renderer sandbox, leaving no window.
 
 // Require `main` process to boot app
 require('./index')

@@ -58,6 +58,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.27.6",
+    "@electron/remote": "^2.0.4",
     "axios": "^0.21.1",
     "bluebird": "^3.7.2",
     "bootstrap": "^4.6.0",

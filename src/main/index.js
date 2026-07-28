@@ -1,4 +1,5 @@
 import { app, BrowserWindow, ipcMain, Menu, dialog } from 'electron' // eslint-disable-line
+import * as remoteMain from '@electron/remote/main';
 import Store from 'electron-store';
 import { Promise } from 'bluebird';
 import NodeID3 from 'node-id3';
@@ -15,29 +16,29 @@ let flatteningInProgress;
 let countFilesToCopy = 0;
 let countCopiedFiles = 0;
 
-const readMetadata = filepath =>
-  new Promise((resolve, reject) => {
-    NodeID3.read(filepath, (err, tags) => {
-      if (err) {
-        reject(err);
-      }
-      resolve(tags);
-    });
+const readMetadata = (filepath) => new Promise((resolve, reject) => {
+  NodeID3.read(filepath, (err, tags) => {
+    if (err) {
+      reject(err);
+    }
+    resolve(tags);
   });
+});
 
-const writeMetadata = (filepath, tags) =>
-  new Promise((resolve, reject) => {
-    NodeID3.update(tags, filepath, (err) => {
-      if (err) {
-        reject(err);
-      }
-      resolve();
-    });
+const writeMetadata = (filepath, tags) => new Promise((resolve, reject) => {
+  NodeID3.update(tags, filepath, (err) => {
+    if (err) {
+      reject(err);
+    }
+    resolve();
   });
+});
 
 const readDir = Promise.promisify(fs.readdir);
 const stat = Promise.promisify(fs.stat);
 const copyFile = Promise.promisify(fs.copyFile);
+
+remoteMain.initialize();
 
 const store = new Store();
 // store.clear();
@@ -87,10 +88,10 @@ const analyzeDirectory = async (dir) => {
   return files.reduce((a, f) => a.concat(f), []);
 };
 
-const analyzePaths = dirs => Promise
+const analyzePaths = (dirs) => Promise
   .map(
     dirs,
-    dir => analyzeDirectory(dir),
+    (dir) => analyzeDirectory(dir),
     { concurrency: 5 },
   );
 
@@ -120,6 +121,7 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     webPreferences: {
       nodeIntegration: true,
+      contextIsolation: false,
     },
     width: 1200,
     minWidth: 1200,
@@ -128,6 +130,8 @@ function createWindow() {
     useContentSize: true,
   });
 
+  remoteMain.enable(mainWindow.webContents);
+
   mainWindow.loadURL(winURL);
 
   mainWindow.on('closed', () => {
@@ -135,11 +139,11 @@ function createWindow() {
   });
 }
 
-const parseComment = comment => comment.replace('[Custom Tags]', '').trim();
+const parseComment = (comment) => comment.replace('[Custom Tags]', '').trim();
 
 const updateTrack = (trackId, trackFields) => {
-  const tracks = store.get('tracks').filter(t => t.id !== trackId);
-  let modifiedTrack = store.get('tracks').find(t => t.id === trackId);
+  const tracks = store.get('tracks').filter((t) => t.id !== trackId);
+  let modifiedTrack = store.get('tracks').find((t) => t.id === trackId);
   modifiedTrack = { ...modifiedTrack, ...trackFields };
   tracks.push(modifiedTrack);
   store.set({ tracks });
@@ -148,14 +152,14 @@ const updateTrack = (trackId, trackFields) => {
 
 const addTracks = (filepaths) => {
   mainWindow.webContents.send('folder:start_import');
-  const oldPaths = store.get('tracks').map(f => f.path);
+  const oldPaths = store.get('tracks').map((f) => f.path);
   const filteredFiles = filepaths
     .filter((filepath) => {
       const mimeType = mime.lookup(filepath);
       return mimeType && mimeType.includes('audio') && mimeType !== 'audio/mpegurl';
     })
-    .filter(filepath => oldPaths.indexOf(filepath) === -1)
-    .map(filepath => ({
+    .filter((filepath) => oldPaths.indexOf(filepath) === -1)
+    .map((filepath) => ({
       path: filepath,
       name: path.basename(filepath),
       type: mime.lookup(filepath),
@@ -180,7 +184,7 @@ const addTracks = (filepaths) => {
 
   Promise.map(
     filteredFiles,
-    t => readMetadata(t.path)
+    (t) => readMetadata(t.path)
       .then((data) => {
         if (!data) {
           return Promise.reject(new Error('No metadata found'));
@@ -255,14 +259,14 @@ ipcMain.on('tag:create', () => {
 });
 
 ipcMain.on('tag:update', (event, updatedTag) => {
-  const tags = store.get('tags').filter(t => t.id !== updatedTag.id);
+  const tags = store.get('tags').filter((t) => t.id !== updatedTag.id);
   tags.push(updatedTag);
   store.set({ tags });
   mainWindow.webContents.send('tag:updated', updatedTag);
 });
 
 ipcMain.on('tag:delete', (event, deletedTag) => {
-  const tags = store.get('tags').filter(t => t.id !== deletedTag.id);
+  const tags = store.get('tags').filter((t) => t.id !== deletedTag.id);
   store.set({ tags });
   mainWindow.webContents.send('tag:deleted', deletedTag);
 
@@ -284,14 +288,14 @@ ipcMain.on('tags:load', () => {
 ipcMain.on('tracks:load', (event, tagId) => {
   let tracks = store.get('tracks') || [];
   if (tagId) {
-    tracks = tracks.filter(t => t.tagBag.indexOf(tagId) > -1);
+    tracks = tracks.filter((t) => t.tagBag.indexOf(tagId) > -1);
   }
   mainWindow.webContents.send('tracks:loaded', tracks);
 });
 
 ipcMain.on('tracks:addTag', (event, { tagId, trackIds }) => {
-  const unmodifiedTracks = store.get('tracks').filter(t => trackIds.indexOf(t.id) === -1);
-  const modifiedTracks = store.get('tracks').filter(t => trackIds.indexOf(t.id) > -1);
+  const unmodifiedTracks = store.get('tracks').filter((t) => trackIds.indexOf(t.id) === -1);
+  const modifiedTracks = store.get('tracks').filter((t) => trackIds.indexOf(t.id) > -1);
   modifiedTracks.forEach((track) => {
     if (track.tagBag.indexOf(parseInt(tagId, 10)) === -1) {
       track.tagBag.push(parseInt(tagId, 10));
@@ -302,7 +306,7 @@ ipcMain.on('tracks:addTag', (event, { tagId, trackIds }) => {
 });
 
 ipcMain.on('tag:applyToMetadata', (event, currentTag) => {
-  const tracks = store.get('tracks').filter(t => t.tagBag.indexOf(currentTag.id) > -1);
+  const tracks = store.get('tracks').filter((t) => t.tagBag.indexOf(currentTag.id) > -1);
   Promise.map(
     tracks,
     (t) => {
@@ -311,7 +315,7 @@ ipcMain.on('tag:applyToMetadata', (event, currentTag) => {
         comments = [currentTag.name.trim()];
       } else {
         const previousList = parseComment(t.metadataComment);
-        comments = previousList.split(' - ').map(c => c.trim());
+        comments = previousList.split(' - ').map((c) => c.trim());
         if (comments.indexOf(currentTag.name.trim()) === -1) {
           comments.push(currentTag.name.trim());
         }
@@ -339,7 +343,7 @@ ipcMain.on('tracks:clearAllMetadata', () => {
     (track) => {
       const tagNames = [];
       track.tagBag.forEach((tagId) => {
-        const tag = tags.find(tagObj => tagObj.id === tagId);
+        const tag = tags.find((tagObj) => tagObj.id === tagId);
         tagNames.push(tag.name);
       });
       const modifiedTrack = updateTrack(track.id, {
@@ -360,25 +364,25 @@ ipcMain.on('tracks:clearAllMetadata', () => {
 
 ipcMain.on('tracks:analyzeComments', () => {
   const tracksWithUnprocessedTags = store.get('tracks')
-    .filter(t => t.metadataComment && t.metadataComment.indexOf('[Custom Tags]') === 0);
+    .filter((t) => t.metadataComment && t.metadataComment.indexOf('[Custom Tags]') === 0);
   if (tracksWithUnprocessedTags.length === 0) {
     mainWindow.webContents.send('tracks:analyzed', []);
     return;
   }
-  const tagNames = store.get('tags').map(t => t.name);
-  const unprocessedTagsArrays = tracksWithUnprocessedTags.map(c => parseComment(c.metadataComment).split(' - '));
+  const tagNames = store.get('tags').map((t) => t.name);
+  const unprocessedTagsArrays = tracksWithUnprocessedTags.map((c) => parseComment(c.metadataComment).split(' - '));
   let unprocessedTags = Array.concat.apply([], unprocessedTagsArrays)
-    .map(ut => ut.trim())
-    .filter(ut => tagNames.indexOf(ut) === -1);
+    .map((ut) => ut.trim())
+    .filter((ut) => tagNames.indexOf(ut) === -1);
   unprocessedTags = unprocessedTags.filter((t, pos) => unprocessedTags.indexOf(t) === pos);
   mainWindow.webContents.send('tracks:analyzed', unprocessedTags);
 });
 
 ipcMain.on('tracks:applyTags', (event, comments) => {
   let tags = store.get('tags');
-  const tagNames = tags.map(t => t.name);
+  const tagNames = tags.map((t) => t.name);
   const newTags = comments
-    .filter(c => tagNames.indexOf(c.modifiedComment.trim()) === -1)
+    .filter((c) => tagNames.indexOf(c.modifiedComment.trim()) === -1)
     .map((c, idx) => ({
       id: autoId(),
       name: c.modifiedComment.trim(),
@@ -390,14 +394,14 @@ ipcMain.on('tracks:applyTags', (event, comments) => {
   mainWindow.webContents.send('tags:created', newTags);
 
   const tracksWithoutCustomTags = store.get('tracks')
-    .filter(t => !t.metadataComment || t.metadataComment.indexOf('[Custom Tags]') !== 0);
+    .filter((t) => !t.metadataComment || t.metadataComment.indexOf('[Custom Tags]') !== 0);
   const tracksWithCustomTags = store.get('tracks')
-    .filter(t => t.metadataComment && t.metadataComment.indexOf('[Custom Tags]') === 0);
+    .filter((t) => t.metadataComment && t.metadataComment.indexOf('[Custom Tags]') === 0);
 
   tracksWithCustomTags.forEach((track) => {
     comments.forEach((c) => {
       if (track.metadataComment.indexOf(c.originalComment) > -1) {
-        const newTag = tags.find(tag => tag.name === c.modifiedComment);
+        const newTag = tags.find((tag) => tag.name === c.modifiedComment);
         if (track.tagBag.indexOf(newTag.id) === -1) {
           track.tagBag.push(newTag.id);
         }
@@ -412,7 +416,7 @@ ipcMain.on('tracks:applyTags', (event, comments) => {
     (track) => {
       const tagNames = [];
       track.tagBag.forEach((tagId) => {
-        const tag = tags.find(tagObj => tagObj.id === tagId);
+        const tag = tags.find((tagObj) => tagObj.id === tagId);
         tagNames.push(tag.name);
       });
       const shortComment = tagNames.join(' - ');
@@ -439,14 +443,14 @@ ipcMain.on('track:search', (event, { searchTerms, tag }) => {
   if (searchTerms.length > 0) {
     const trackIds = mainIndex.search(searchTerms);
     tracks = tracks
-      .filter(t => trackIds.indexOf(t.id) > -1 && (!tag || t.tagBag.indexOf(tag.id) > -1));
+      .filter((t) => trackIds.indexOf(t.id) > -1 && (!tag || t.tagBag.indexOf(tag.id) > -1));
   }
   mainWindow.webContents.send('tracks:loaded', tracks);
 });
 
 ipcMain.on('tracks:remove', (event, { trackIds, tag }) => {
-  let remainingTracks = store.get('tracks').filter(t => trackIds.indexOf(t.id) === -1);
-  const removedTracks = store.get('tracks').filter(t => trackIds.indexOf(t.id) > -1);
+  let remainingTracks = store.get('tracks').filter((t) => trackIds.indexOf(t.id) === -1);
+  const removedTracks = store.get('tracks').filter((t) => trackIds.indexOf(t.id) > -1);
   if (tag) {
     removedTracks.forEach((track) => {
       const idx = track.tagBag.indexOf(tag.id);
@@ -466,7 +470,7 @@ ipcMain.on('columns:load', (event, windowWidth) => {
     if (c.revColOrder === 1) {
       c.size = windowWidth
         - columns
-          .map(col => (col.revColOrder > 1 && col.visible ? col.size : 0))
+          .map((col) => (col.revColOrder > 1 && col.visible ? col.size : 0))
           .reduce((acc, s) => acc + s);
     }
   });
@@ -492,12 +496,12 @@ ipcMain.on('column:invert_order', (event, columnId) => {
 
 ipcMain.on('column:toggle_visibility', (event, { columnId, windowWidth }) => {
   const columns = store.get('columns');
-  const column = { ...columns.find(c => c.id === columnId) };
+  const column = { ...columns.find((c) => c.id === columnId) };
   const totalSize = columns
-    .filter(c => c.visible)
+    .filter((c) => c.visible)
     .reduce((acc, s) => acc + s.size, 0);
   const countVisibleColumns = columns
-    .filter(c => c.visible)
+    .filter((c) => c.visible)
     .length;
   columns.forEach((c) => {
     if (c.id === columnId) {
@@ -506,8 +510,8 @@ ipcMain.on('column:toggle_visibility', (event, { columnId, windowWidth }) => {
       c.size = 100;
     } else if (!column.visible) {
       c.revColOrder += 1;
-      c.size = Math.floor(c.size - (100 *
-        ((c.size - 100) / ((totalSize - (100 * countVisibleColumns))))));
+      c.size = Math.floor(c.size - (100
+        * ((c.size - 100) / ((totalSize - (100 * countVisibleColumns))))));
     } else {
       if (c.revColOrder > column.revColOrder) {
         c.revColOrder -= 1;
@@ -519,7 +523,7 @@ ipcMain.on('column:toggle_visibility', (event, { columnId, windowWidth }) => {
     if (c.revColOrder === 1) {
       c.size = windowWidth
         - columns
-          .map(col => (col.revColOrder > 1 && col.visible ? col.size : 0))
+          .map((col) => (col.revColOrder > 1 && col.visible ? col.size : 0))
           .reduce((acc, s) => acc + s);
     }
   });
@@ -530,7 +534,7 @@ ipcMain.on('column:toggle_visibility', (event, { columnId, windowWidth }) => {
 ipcMain.on('columns:update_size', (event, { columns }) => {
   const columnsToUpdate = store.get('columns');
   columnsToUpdate.forEach((c) => {
-    const newColumn = columns.find(col => col.id === c.id);
+    const newColumn = columns.find((col) => col.id === c.id);
     c.size = newColumn.size;
   });
   store.set({ columns: columnsToUpdate });
@@ -561,7 +565,7 @@ ipcMain.on('column:update_order', (event, { movedColumn, droppedOn, before }) =>
 
 const flattenFolder = async (dir) => {
   let timestamp = new Date().toISOString().substring(0, 10);
-  timestamp = timestamp.replace(/./g, char => (char.charCodeAt(0) === 45 ? '' : char));
+  timestamp = timestamp.replace(/./g, (char) => (char.charCodeAt(0) === 45 ? '' : char));
   const newDir = `${dir}_${timestamp}`;
   if (fs.existsSync(newDir)) {
     dialog.showMessageBox(mainWindow, {
@@ -581,7 +585,7 @@ const flattenFolder = async (dir) => {
   Promise
     .map(
       files,
-      async file => copyFile(file, path.join(newDir, path.basename(file))).then(() => {
+      async (file) => copyFile(file, path.join(newDir, path.basename(file))).then(() => {
         countCopiedFiles += 1;
         mainWindow.webContents.send('file:copied', { countFilesToCopy, countCopiedFiles });
         return Promise.resolve();
@@ -614,7 +618,7 @@ const menuTemplate = [
                 return;
               }
               dialog.showOpenDialog(mainWindow, { properties: ['openFile', 'multiSelections'] })
-                .then(result => addTracks(result.filePaths));
+                .then((result) => addTracks(result.filePaths));
             },
           },
           {
@@ -629,8 +633,8 @@ const menuTemplate = [
                 return;
               }
               dialog.showOpenDialog(mainWindow, { properties: ['openDirectory', 'multiSelections'] })
-                .then(result => analyzePaths(result.filePaths))
-                .then(filepathsArrays => addTracks(Array.concat.apply([], filepathsArrays)));
+                .then((result) => analyzePaths(result.filePaths))
+                .then((filepathsArrays) => addTracks(Array.concat.apply([], filepathsArrays)));
             },
           },
         ],
@@ -646,7 +650,7 @@ const menuTemplate = [
             return;
           }
           dialog.showOpenDialog(mainWindow, { properties: ['openDirectory'] })
-            .then(result => flattenFolder(result.filePaths[0]));
+            .then((result) => flattenFolder(result.filePaths[0]));
         },
       },
       {

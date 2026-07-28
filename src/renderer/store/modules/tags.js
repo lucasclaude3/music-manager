@@ -13,11 +13,11 @@ const mutations = {
     state.tags.push(payload.tag);
   },
   UPDATE_TAG(state, payload) {
-    state.tags = state.tags.filter(t => t.id !== payload.tag.id);
+    state.tags = state.tags.filter((t) => t.id !== payload.tag.id);
     state.tags.push(payload.tag);
   },
   DELETE_TAG(state, payload) {
-    state.tags = state.tags.filter(t => t.id !== payload.tag.id);
+    state.tags = state.tags.filter((t) => t.id !== payload.tag.id);
   },
   SET_CURRENT_TAG(state, payload) {
     state.currentTag = payload.currentTag;
@@ -28,7 +28,7 @@ const actions = {
   loadTags({ commit }) {
     ipcRenderer.send('tags:load');
     ipcRenderer.on('tags:loaded', (event, tags) => {
-      commit({ type: 'LOAD_USER_TAGS', tags: tags.filter(t => !!t.name) });
+      commit({ type: 'LOAD_USER_TAGS', tags: tags.filter((t) => !!t.name) });
     });
   },
 

@@ -1,6 +1,8 @@
 class UndoRedoHistory {
   store;
+
   history = [];
+
   currentIndex = -1;
 
   init(store) {

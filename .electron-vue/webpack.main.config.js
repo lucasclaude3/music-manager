@@ -5,6 +5,7 @@ process.env.BABEL_ENV = 'main'
 const path = require('path')
 const { dependencies } = require('../package.json')
 const webpack = require('webpack')
+const ESLintPlugin = require('eslint-webpack-plugin')
 
 const BabiliWebpackPlugin = require('babili-webpack-plugin')
 
@@ -17,17 +18,6 @@ let mainConfig = {
   ],
   module: {
     rules: [
-      {
-        test: /\.(js)$/,
-        enforce: 'pre',
-        exclude: /node_modules/,
-        use: {
-          loader: 'eslint-loader',
-          options: {
-            formatter: require('eslint-friendly-formatter')
-          }
-        }
-      },
       {
         test: /\.js$/,
         use: 'babel-loader',
@@ -49,6 +39,9 @@ let mainConfig = {
     path: path.join(__dirname, '../dist/electron')
   },
   plugins: [
+    new ESLintPlugin({
+      formatter: require('eslint-friendly-formatter')
+    }),
     new webpack.NoEmitOnErrorsPlugin()
   ],
   resolve: {

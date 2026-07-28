@@ -69,7 +69,6 @@ import '@/assets/compiled-icons/pause';
 import '@/assets/compiled-icons/stop';
 import '@/assets/compiled-icons/fast-forward';
 
-
 export default {
   name: 'Reader',
   data() {
@@ -140,7 +139,7 @@ export default {
       if (!this.sound) {
         return;
       }
-      const i = this.playlist.map(t => t.id).indexOf(this.currentTrack.id);
+      const i = this.playlist.map((t) => t.id).indexOf(this.currentTrack.id);
       if (i > -1) {
         this.launchTrack(this.playlist[Math.max(i - 1, 0)]);
       }
@@ -150,7 +149,7 @@ export default {
       if (!this.sound) {
         return;
       }
-      const i = this.playlist.map(t => t.id).indexOf(this.currentTrack.id);
+      const i = this.playlist.map((t) => t.id).indexOf(this.currentTrack.id);
       if (i > -1 && i < this.playlist.length - 1) {
         this.launchTrack(this.playlist[i + 1]);
       } else if (i === -1) { // it means we are in another tag library

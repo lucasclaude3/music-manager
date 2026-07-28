@@ -92,7 +92,8 @@
 
 <script>
 import { mapState, mapActions } from 'vuex';
-import { remote, ipcRenderer, shell } from 'electron';
+import { ipcRenderer, shell } from 'electron';
+import * as remote from '@electron/remote';
 import avars from '@/assets/utils/vars';
 
 import FlatteningFolderProgressModal from './FlatteningFolderProgressModal';
@@ -126,8 +127,8 @@ export default {
   },
   mounted() {
     this.loadColumnsContextMenu();
-    this.loadColumns(window.innerWidth -
-      (this.vars.sidebarWidth + this.vars.collapsableSidebarWidth));
+    this.loadColumns(window.innerWidth
+      - (this.vars.sidebarWidth + this.vars.collapsableSidebarWidth));
     this.loadTracks();
     this.loadTracksContextMenu();
     this.watchTrackAddition();
@@ -135,8 +136,8 @@ export default {
     window.addEventListener('resize', () => {
       this.winHeight = window.innerHeight;
       this.winWidth = window.innerWidth;
-      this.loadColumns(window.innerWidth -
-        (this.vars.sidebarWidth + this.vars.collapsableSidebarWidth));
+      this.loadColumns(window.innerWidth
+        - (this.vars.sidebarWidth + this.vars.collapsableSidebarWidth));
     });
     window.document.addEventListener('mousemove', this.onMouseMove);
     window.document.addEventListener('mouseup', this.onMouseUp);
@@ -149,12 +150,12 @@ export default {
     ...mapState('columns', ['columns']),
     orderedColumns() {
       return [...this.columns]
-        .filter(c => c.visible)
+        .filter((c) => c.visible)
         .sort((a, b) => (a.revColOrder > b.revColOrder ? -1 : 1));
     },
     orderedTracks() {
       const { sortKey, columns, tracks } = this;
-      const column = columns.find(c => c.id === sortKey);
+      const column = columns.find((c) => c.id === sortKey);
       const order = (column && column.sortOrder) || 1;
       const tmpTracks = [...tracks]
         .sort((a, b) => {
@@ -199,9 +200,9 @@ export default {
         return;
       }
       const selectedTrackIds = this.orderedTracks
-        .filter(t => t.index >= parseInt(this.firstSelectedElement.id, 10)
+        .filter((t) => t.index >= parseInt(this.firstSelectedElement.id, 10)
                   && t.index <= parseInt(this.secondSelectedElement.id, 10))
-        .map(t => t.id);
+        .map((t) => t.id);
       this.removeTracksFromList({ trackIds: selectedTrackIds, tag: this.currentTag });
     },
     handleDragTrack(event) {
@@ -211,9 +212,9 @@ export default {
         this.handleFocus(event);
       }
       const selectedTracks = this.orderedTracks
-        .filter(t => t.index >= parseInt(this.firstSelectedElement.id, 10)
+        .filter((t) => t.index >= parseInt(this.firstSelectedElement.id, 10)
                   && t.index <= parseInt(this.secondSelectedElement.id, 10))
-        .map(t => t.id);
+        .map((t) => t.id);
       event
         .dataTransfer
         .setData('text/plain', selectedTracks);
@@ -238,12 +239,12 @@ export default {
     },
     handleDropColumn(event) {
       event.target.classList.remove('dragover');
-      const droppedOn = this.columns.find(c => c.id === event.target.parentNode.id);
+      const droppedOn = this.columns.find((c) => c.id === event.target.parentNode.id);
       const columnId = event
         .dataTransfer
         .getData('text');
       this.updateColumnOrder({
-        movedColumn: this.columns.find(c => c.id === columnId),
+        movedColumn: this.columns.find((c) => c.id === columnId),
         droppedOn,
         before: event.target.classList.contains('reorder-before'),
       });
@@ -292,8 +293,8 @@ export default {
               vm.toggleColumnVisibility({
                 columnId: c.id,
                 windowWidth:
-                  (window.innerWidth -
-                    (this.vars.sidebarWidth + this.vars.collapsableSidebarWidth)),
+                  (window.innerWidth
+                    - (this.vars.sidebarWidth + this.vars.collapsableSidebarWidth)),
               });
             },
           }));
@@ -311,7 +312,7 @@ export default {
         label: 'Open file in folder',
         click() {
           const trackId = parseInt(vm.firstSelectedElement.getAttribute('data-id'), 10);
-          const track = vm.tracks.find(t => t.id === trackId);
+          const track = vm.tracks.find((t) => t.id === trackId);
           const url = track.path;
           shell.openItem(url.substring(0, url.lastIndexOf('/')));
         },
@@ -328,7 +329,7 @@ export default {
         return;
       }
       if (this.sortKey === key) {
-        const columnToUpdate = this.columns.find(c => c.id === key);
+        const columnToUpdate = this.columns.find((c) => c.id === key);
         this.invertOrder(columnToUpdate.id);
       }
       this.sortKey = key;

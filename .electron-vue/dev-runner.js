@@ -48,32 +48,31 @@ function startRenderer () {
       heartbeat: 2500
     })
 
-    compiler.hooks.compilation.tap('compilation', compilation => {
-      compilation.hooks.htmlWebpackPluginAfterEmit.tapAsync('html-webpack-plugin-after-emit', (data, cb) => {
-        hotMiddleware.publish({ action: 'reload' })
-        cb()
-      })
-    })
-
     compiler.hooks.done.tap('done', stats => {
       logStats('Renderer', stats)
     })
 
     const server = new WebpackDevServer(
-      compiler,
       {
-        contentBase: path.join(__dirname, '../'),
-        quiet: true,
-        before (app, ctx) {
-          app.use(hotMiddleware)
-          ctx.middleware.waitUntilValid(() => {
-            resolve()
-          })
+        port: 9081,
+        static: {
+          directory: path.join(__dirname, '../')
+        },
+        setupMiddlewares: (middlewares, devServer) => {
+          devServer.app.use(hotMiddleware)
+          return middlewares
         }
-      }
+      },
+      compiler
     )
 
-    server.listen(9081)
+    server.start().then(() => {
+      console.log('Dev server started on http://localhost:9081')
+      resolve()
+    }).catch(err => {
+      console.error('Failed to start dev server:', err)
+      reject(err)
+    })
   })
 }
 
@@ -85,7 +84,9 @@ function startMain () {
 
     compiler.hooks.watchRun.tapAsync('watch-run', (compilation, done) => {
       logStats('Main', chalk.white.bold('compiling...'))
-      hotMiddleware.publish({ action: 'compiling' })
+      if (hotMiddleware) {
+        hotMiddleware.publish({ action: 'compiling' })
+      }
       done()
     })
 

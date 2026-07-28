@@ -90,7 +90,7 @@ export default {
     loadAllPlaylistsItems() {
       return Promise.map(
         this.playlists,
-        p => this.loadPlaylistItems(p.id),
+        (p) => this.loadPlaylistItems(p.id),
         { concurrency: 5 },
       );
     },
@@ -99,7 +99,7 @@ export default {
         url: `${this.playlistItemsUrl}&playlistId=${playlistId}`,
         nextPageToken: null,
         isFirstCall: true,
-        auxiliaryFunction: data => this.savePlaylistItems(data, playlistId),
+        auxiliaryFunction: (data) => this.savePlaylistItems(data, playlistId),
       });
     },
     getPageAndIterate({
@@ -131,7 +131,7 @@ export default {
       this.nextPageToken = data.nextPageToken;
     },
     savePlaylistItems(data, playlistId) {
-      const playlist = this.playlists.find(p => p.id === playlistId);
+      const playlist = this.playlists.find((p) => p.id === playlistId);
       playlist.playlistItems = (playlist.playlistItems || []).concat(data.items);
       this.playlists = [...this.playlists];
     },

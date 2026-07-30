@@ -314,7 +314,7 @@ export default {
           const trackId = parseInt(vm.firstSelectedElement.getAttribute('data-id'), 10);
           const track = vm.tracks.find((t) => t.id === trackId);
           const url = track.path;
-          shell.openItem(url.substring(0, url.lastIndexOf('/')));
+          shell.openPath(url.substring(0, url.lastIndexOf('/')));
         },
       }));
     },

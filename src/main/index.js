@@ -371,7 +371,7 @@ ipcMain.on('tracks:analyzeComments', () => {
   }
   const tagNames = store.get('tags').map((t) => t.name);
   const unprocessedTagsArrays = tracksWithUnprocessedTags.map((c) => parseComment(c.metadataComment).split(' - '));
-  let unprocessedTags = Array.concat.apply([], unprocessedTagsArrays)
+  let unprocessedTags = [].concat(...unprocessedTagsArrays)
     .map((ut) => ut.trim())
     .filter((ut) => tagNames.indexOf(ut) === -1);
   unprocessedTags = unprocessedTags.filter((t, pos) => unprocessedTags.indexOf(t) === pos);
@@ -634,7 +634,7 @@ const menuTemplate = [
               }
               dialog.showOpenDialog(mainWindow, { properties: ['openDirectory', 'multiSelections'] })
                 .then((result) => analyzePaths(result.filePaths))
-                .then((filepathsArrays) => addTracks(Array.concat.apply([], filepathsArrays)));
+                .then((filepathsArrays) => addTracks([].concat(...filepathsArrays)));
             },
           },
         ],
